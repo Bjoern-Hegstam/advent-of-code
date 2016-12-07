@@ -2,9 +2,6 @@
 
 import fileinput
 
-x = 0
-y = 0
-
 SQUARE_KEYPAD = {
     (1, -1): '1',
     (1, 0): '2',
@@ -39,6 +36,8 @@ STAR_KEYPAD = {
     (-2, 0): 'D'
 }
 
+x = 0
+y = 0
 code = ''
 
 #keypad = SQUARE_KEYPAD
