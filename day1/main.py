@@ -2,6 +2,8 @@
 
 import fileinput
 
+visited_locations = {(0, 0)}
+
 for line in fileinput.input():
     pos_x = 0
     pos_y = 0
@@ -15,7 +17,13 @@ for line in fileinput.input():
         else:
             dir_x, dir_y = dir_y, -dir_x
 
-        pos_x += magnitude * dir_x
-        pos_y += magnitude * dir_y
+        for step in range(magnitude):
+            pos_x += dir_x
+            pos_y += dir_y
+
+            if (pos_x, pos_y) in visited_locations:
+                print('Location visited twice: (%s, %s)' % (pos_x, pos_y))
+            else:
+                visited_locations.add((pos_x, pos_y))
 
     print(pos_x + pos_y)
