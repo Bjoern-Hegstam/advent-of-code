@@ -11,3 +11,4 @@ for line in fileinput.input():
 
 
 print(''.join([max(h.keys(), key=h.get) for h in histograms]))
+print(''.join([min(h.keys(), key=h.get) for h in histograms]))
