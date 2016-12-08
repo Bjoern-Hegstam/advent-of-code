@@ -28,17 +28,21 @@ def split_ip(ip):
     return parts
 
 def contains_abba(s):
-    pass
+    for i in range(len(s) - 3):
+        if s[i] != s[i + 1] and s[i] == s[i + 3] and s[i + 1] == s[i + 2]:
+            return True
+
+    return False
 
 for line in fileinput.input():
     ip_parts = split_ip(line)
     print(ip_parts)
 
     # Skip ip if any bracket part contains abba
-    if any(contains_abba(p) for p in ip_parts if p[1]):
+    if any(contains_abba(p[0]) for p in ip_parts if p[1]):
         continue
 
-    if any(contains_abba(p) for p in ip_parts if not p[1]):
+    if any(contains_abba(p[0]) for p in ip_parts if not p[1]):
         ip_count += 1
 
 print(ip_count)
