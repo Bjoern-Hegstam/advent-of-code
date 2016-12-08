@@ -2,12 +2,14 @@
 
 import fileinput
 
+ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 sector_id_sum = 0
 
 for line in fileinput.input():
     histogram = {}
+    encrypted_name = line[:line.rfind('-')]
 
-    for letter in line[:line.rfind('-')]:
+    for letter in encrypted_name:
         if letter == '-':
             continue
 
@@ -24,7 +26,35 @@ for line in fileinput.input():
     #print(room_hash)
     #print(expected_hash)
 
-    if expected_hash == room_hash:
-        sector_id_sum += int(sector_id)
+    if expected_hash != room_hash:
+        continue
+
+    sector_id_sum += int(sector_id)
+
+    decrypted_name = ''
+    for letter in encrypted_name:
+        if letter == '-':
+            decrypted_name += ' '
+            continue
+
+        decrypted_name += ALPHABET[(ALPHABET.index(letter) + int(sector_id)) % len(ALPHABET)]
+
+    # Filter out all names with easter related words in them. (Instead of guessing the correct name)
+    banned_words = [
+        'egg',
+        'basket',
+        'flower',
+        'bunny',
+        'rabbit',
+        'scavenger',
+        'jellybean',
+        'candy',
+        'dye',
+        'chocolate',
+        'grass'
+    ]
+
+    if all(word not in decrypted_name for word in banned_words):
+        print('%s - %s' % (sector_id, decrypted_name))
 
 print(sector_id_sum)
