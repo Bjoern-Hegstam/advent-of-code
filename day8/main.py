@@ -4,7 +4,7 @@ import fileinput
 
 class PixelState:
     ON = '#'
-    OFF = '+'
+    OFF = ' '
 
 WIDTH = 50
 HEIGHT = 6
@@ -14,8 +14,8 @@ class Display:
         self.width = width
         self.height = height
 
-        self.__display = [['+'] * width for x in range(height)]
-        self.__buffer = [['+'] * width for x in range(height)]
+        self.__display = [[PixelState.OFF] * width for x in range(height)]
+        self.__buffer = [[PixelState.OFF] * width for x in range(height)]
 
     def fill_rect(self, width, height):
         for y in range(height):
