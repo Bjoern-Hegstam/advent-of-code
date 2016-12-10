@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo 'TEST - PART 1'
+echo '---'
 echo 'ADVENT' | ./main.py
 echo '6 - Expected'
 echo '---'
@@ -14,6 +16,9 @@ echo '6 - Expected'
 echo '---'
 echo 'X(8x2)(3x3)ABCY' | ./main.py
 echo '18 - Expected'
+
+echo '---'
+echo 'TEST - PART 2'
 echo '---'
 echo '(3x3)XYZ' | ./main.py --part 2
 echo '9 - Expected'
