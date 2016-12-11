@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
 import fileinput
-
+import re
 
 class State:
-    def __init__(self, components=None):
+    def __init__(self, floor_count, components=None):
+        self.__floor_count = floor_count
         self.__components = components if components else {}
         self.__elevator = 1
 
     def copy(self):
-        return State(dict(self.__components))
+        return State(self.__floor_count, dict(self.__components))
 
     def add(self, component, floor):
         self.__components[component] = floor
@@ -44,11 +45,9 @@ class State:
 
 
     def __repr__(self):
-        top_floor = max(self.__components.values())
-
         res = ''
-        for floor in range(top_floor, 0, -1):
-            res += 'F' + str(floor).zfill(len(str(top_floor)))
+        for floor in range(self.__floor_count, 0, -1):
+            res += 'F' + str(floor).zfill(len(str(self.__floor_count)))
             res += ' '
             res += 'E' if self.__elevator == floor else '.'
             res += ' '
@@ -66,14 +65,49 @@ class Move:
         self.components = components
 
 def main():
-    initial_state = State()
+    initial_state = State(4)
+
+    element_to_letter = {
+         'strontium': 'S',
+         'strontium-compatible': 'S',
+
+         'plutonium' : 'P',
+         'plutonium-compatible' : 'P',
+
+         'thulium': 'T',
+         'thulium-compatible': 'T',
+
+         'ruthenium': 'R',
+         'ruthenium-compatible': 'R',
+
+         'curium': 'C',
+         'curium-compatible': 'C',
+    }
+
+    component_type_to_letter = {
+        'generator': 'G',
+        'microchip': 'M'
+    }
+
+    floor_name_to_number = {
+        'first': 1,
+        'second': 2,
+        'third': 3,
+        'fourth': 4
+    }
 
     for line in fileinput.input():
-        # TODO: Construct initial state
-        pass
-    initial_state.add('HG', 3)
-    initial_state.add('HM', 2)
-    initial_state.add('LG', 20)
+        if 'nothing relevant' in line:
+            continue
+
+        line_parts = re.split(r', | |\.', line.strip())
+        floor = floor_name_to_number[line_parts[1]]
+
+        for idx, line_part in enumerate(line_parts):
+            if line_part in component_type_to_letter:
+                component = element_to_letter[line_parts[idx - 1]] + component_type_to_letter[line_part]
+                initial_state.add(component, floor)
+
 
     print(initial_state)
 
