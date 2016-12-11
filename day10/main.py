@@ -70,6 +70,12 @@ def main():
     for output_id in sorted(outputs):
         print('%s - %s' % (output_id, outputs[output_id]))
 
+    print('---')
+    product = 1
+    for idx in range(3):
+        product *= int(outputs[str(idx)][0])
+    print('Part 2: %s' % product)
+
 
 
 if __name__ == '__main__':
