@@ -15,6 +15,7 @@ from collections import deque
 
 COMPONENTS = ['HG', 'HM', 'LG', 'LM']
 COMPONENTS = ['CG', 'CM', 'PG', 'PM', 'RG', 'RM', 'SG', 'SM', 'TG', 'TM']
+COMPONENTS = ['CG', 'CM', 'PG', 'PM', 'RG', 'RM', 'SG', 'SM', 'TG', 'TM', 'EG', 'EM', 'DG', 'DM']
 
 def log(s):
     print(s)
@@ -111,6 +112,7 @@ def main():
     components = [3, 3, 1, 2, 3, 3, 1, 2, 1, 1]
     components = [2, 1, 3, 1]
     components = [2, 2, 1, 1, 2, 2, 1, 1, 2, 3]
+    components = [2, 2, 1, 1, 2, 2, 1, 1, 2, 3, 1, 1, 1, 1]
     elevator = 1
 
     initial_state = State(floor_count, components, elevator)
@@ -123,7 +125,12 @@ def main():
     visited_states.append(initial_state.hash())
 
     final_node = None
+    counter = 0
     while node_queue:
+        counter += 1
+        if counter % 1000 == 0:
+            print('%s: Queue size: %s' % (counter, len(node_queue)), flush=True)
+
         parent_node = node_queue.popleft()
 
         if parent_node.state.is_final_state():
