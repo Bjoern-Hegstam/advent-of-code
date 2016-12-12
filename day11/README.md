@@ -1,0 +1,1 @@
+This is probably the solution I'm the least happy with. Might return in the future to pretty it up and implement input parsing.
