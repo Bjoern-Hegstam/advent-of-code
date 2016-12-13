@@ -3,9 +3,39 @@
 import fileinput
 import argparse
 
+def main(part, files):
+    lines = [line.strip() for line in fileinput.input(files)]
+    seed = int(lines[0])
+    start = tuple([int(d) for d in lines[1].split(',')])
+    target = tuple([int(d) for d in lines[2].split(',')])
+
+    m = Map(seed)
+    m.draw((0, 0), (10, 10))
+    return
+
+    path = find_path(m, start, target)
+    print('Path length: %s' % len(path))
+
+
+def find_path(m, start, target):
+    closed_set = set()
+    open_set = set()
+
+    # Maps position to its previous position
+    came_from = {}
+
+    g_score = {}
+    f_score = {}
+
+
+
+    return []
+
+
 class Tile:
     WALL = '#'
     OPEN = '.'
+    PATH = 'O'
 
 
 class Map:
@@ -29,25 +59,15 @@ class Map:
 
         return Tile.OPEN if count_ones % 2 == 0 else Tile.WALL
 
+    def draw(self, top_left, bottom_right, path=None):
+        print('  ' + ''.join([str(x) for x in range(top_left[0], bottom_right[0])]))
 
-def draw_map(m, top_left, bottom_right):
-    print('  ' + ''.join([str(x) for x in range(top_left[0], bottom_right[0])]))
-    
-    for y in range(top_left[1], bottom_right[1]):
-        print('%s ' % y, end='')
-        for x in range(top_left[0], bottom_right[0]):
-            print(m.get((x, y)), end='')
-        print()
+        for y in range(top_left[1], bottom_right[1]):
+            print('%s ' % y, end='')
+            for x in range(top_left[0], bottom_right[0]):
+                print(Tile.PATH if (x, y) in path else self.get((x, y)), end='')
+            print()
 
-
-def main(part, files):
-    lines = [line.strip() for line in fileinput.input(files)]
-    seed = int(lines[0])
-    target = tuple([int(d) for d in lines[1].split(',')])
-
-    m = Map(seed)
-
-    draw_map(m, (0, 0), (10, 7))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
