@@ -7,20 +7,38 @@ import math
 def main(part, files):
     lines = [line.strip() for line in fileinput.input(files)]
     seed = int(lines[0])
+    m = Map(seed)
+    start = tuple([int(d) for d in lines[1].split(',')])
 
     if part == 1:
-        start = tuple([int(d) for d in lines[1].split(',')])
         target = tuple([int(d) for d in lines[2].split(',')])
 
-        m = Map(seed)
         path = find_path(m, start, target)
 
-        print('Path length: %s' % (len(path) - 1))
+        print('Step count: %s' % (len(path) - 1))
     else:
-        pass
+        path_count = 0
+
+        for y in range(52):
+            for x in range(52):
+                target = (x, y)
+
+                if m.get(target) == Tile.WALL:
+                    continue
+
+                # Search from target to start in case target in inaccessible from start
+                path = find_path(m, target, start)
+                step_count = len(path) - 1
+                if path and step_count <= 50:
+                    path_count += 1
+
+        print('Num targets reachable in 50 steps or less: %s' % path_count)
 
 
 def find_path(m, start, target):
+    '''
+    A* implemented from pseducode @ https://en.wikipedia.org/wiki/A*_search_algorithm (2016-12-13)
+    '''
     closed_set = set()
     open_set = set()
 
