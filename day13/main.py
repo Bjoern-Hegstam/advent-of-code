@@ -2,24 +2,30 @@
 
 import fileinput
 import argparse
+import math
 
 def main(part, files):
     lines = [line.strip() for line in fileinput.input(files)]
     seed = int(lines[0])
-    start = tuple([int(d) for d in lines[1].split(',')])
-    target = tuple([int(d) for d in lines[2].split(',')])
 
-    m = Map(seed)
-    m.draw((0, 0), (10, 10))
-    return
+    if part == 1:
+        start = tuple([int(d) for d in lines[1].split(',')])
+        target = tuple([int(d) for d in lines[2].split(',')])
 
-    path = find_path(m, start, target)
-    print('Path length: %s' % len(path))
+        m = Map(seed)
+        path = find_path(m, start, target)
+
+        print('Path length: %s' % (len(path) - 1))
+    else:
+        pass
 
 
 def find_path(m, start, target):
     closed_set = set()
     open_set = set()
+
+    dist = lambda p1, p2: abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+    h = lambda pos: dist(pos, target)
 
     # Maps position to its previous position
     came_from = {}
@@ -27,9 +33,56 @@ def find_path(m, start, target):
     g_score = {}
     f_score = {}
 
+    g_score[start] = 0
+    f_score[start] = h(start)
 
+    open_set.add(start)
+
+    while open_set:
+        current = min([(p, f_score.get(p, math.inf)) for p in open_set], key=lambda d: d[1])[0]
+        if current == target:
+            return build_path(came_from, current)
+
+        open_set.remove(current)
+        closed_set.add(current)
+
+        for neighbor in generate_neighbors(m, current):
+            if neighbor in closed_set:
+                continue
+
+            g = g_score[current] + dist(current, neighbor)
+            if neighbor not in open_set:
+                open_set.add(neighbor)
+            elif g >= g_score.get(neighbor, math.inf):
+                # Already now of a better path to this position
+                continue
+
+            # Best path here so far
+            came_from[neighbor] = current
+            g_score[neighbor] = g
+            f_score[neighbor] = g_score[neighbor] + h(neighbor)
 
     return []
+
+
+def generate_neighbors(m, pos):
+    for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+        new_pos = (pos[0] + dx, pos[1] + dy)
+
+        if new_pos[0] < 0 or new_pos[1] < 0:
+            continue
+
+        if m.get(new_pos) == Tile.OPEN:
+            yield new_pos
+
+
+def build_path(came_from, end_pos):
+    path = [end_pos]
+    temp = end_pos
+    while temp in came_from:
+        temp = came_from[temp]
+        path.append(temp)
+    return path
 
 
 class Tile:
@@ -60,6 +113,9 @@ class Map:
         return Tile.OPEN if count_ones % 2 == 0 else Tile.WALL
 
     def draw(self, top_left, bottom_right, path=None):
+        if not path:
+            path = []
+
         print('  ' + ''.join([str(x) for x in range(top_left[0], bottom_right[0])]))
 
         for y in range(top_left[1], bottom_right[1]):
