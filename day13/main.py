@@ -23,7 +23,7 @@ class Map:
         x = pos[0]
         y = pos[1]
 
-        val = x*x + 3*x + 2*x*y + y*y
+        val = x*x + 3*x + 2*x*y + y + y*y
         val += self.__seed
         count_ones = len([d for d in bin(val) if d == '1'])
 
