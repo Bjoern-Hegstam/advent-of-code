@@ -41,7 +41,10 @@ def draw_map(m, top_left, bottom_right):
 
 
 def main(part, files):
-    seed = int([line.strip() for line in fileinput.input(files)][0])
+    lines = [line.strip() for line in fileinput.input(files)]
+    seed = int(lines[0])
+    target = tuple([int(d) for d in lines[1].split(',')])
+
     m = Map(seed)
 
     draw_map(m, (0, 0), (10, 7))
