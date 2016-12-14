@@ -5,8 +5,8 @@ import argparse
 import hashlib
 
 class Hash:
-    def __init__(self, seed, idx):
-        self.hash = hashlib.md5(bytes(seed + str(idx), encoding='utf-8')).hexdigest()
+    def __init__(self, seed, idx, stretched=False):
+        self.hash = self.__generate_hash(seed, idx, 2016 if stretched else 0)
 
         char_counts = []
         current_char = self.hash[0]
@@ -28,18 +28,27 @@ class Hash:
 
         self.seven_series_keys = set(c for c, count in char_counts if count >= 5)
 
+    @staticmethod
+    def __generate_hash(seed, idx, iterations):
+        hash_fun = lambda value: hashlib.md5(bytes(value, encoding='utf-8')).hexdigest()
+        tmp = hash_fun(seed + str(idx))
+        for i in range(iterations):
+            tmp = hash_fun(tmp)
+        return tmp
+
     def __repr__(self):
         return self.hash
 
 
 class HashCache:
-    def __init__(self, seed):
+    def __init__(self, seed, stretched=False):
         self.__seed = seed
         self.__cache = {}
+        self.__stretched = stretched
 
     def get(self, idx):
         if idx not in self.__cache:
-            self.__cache[idx] = Hash(self.__seed, idx)
+            self.__cache[idx] = Hash(self.__seed, idx, stretched=self.__stretched)
 
         return self.__cache[idx]
 
@@ -51,22 +60,24 @@ def main(part, files):
     lines = [line.strip() for line in fileinput.input(files)]
     seed = lines[0]
 
-    pad_keys = find_pad_keys(seed)
+    pad_keys = find_pad_keys(seed, HashCache(seed, stretched=(args.part == 2)))
     print(pad_keys)
 
 
-def find_pad_keys(seed):
+def find_pad_keys(seed, hash_cache):
     pad_keys = []
-
-    hashes = HashCache(seed)
 
     idx = 0
     while len(pad_keys) < 64:
-        if is_valid_hash_key(hashes, idx):
-            pad_keys.append((idx, hashes.get(idx)))
+        if is_valid_hash_key(hash_cache, idx):
+            pad_keys.append((idx, hash_cache.get(idx)))
+            print_pad_key_progress(idx, pad_keys)
+
+        if idx % 500 == 0:
+            print_pad_key_progress(idx, pad_keys)
 
         # Prevent cache from growing too much
-        hashes.remove(idx)
+        hash_cache.remove(idx)
         idx += 1
 
     return pad_keys
@@ -82,6 +93,10 @@ def is_valid_hash_key(hash_cache, idx):
             return True
 
     return False
+
+
+def print_pad_key_progress(idx, pad_keys):
+    print('%s - %s' % (idx, len(pad_keys)), flush=True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
