@@ -61,7 +61,10 @@ def main(part, files):
     seed = lines[0]
 
     pad_keys = find_pad_keys(HashCache(seed, stretched=(args.part == 2)))
-    print(pad_keys)
+
+    print('\nPad keys')
+    for idx, (key_idx, key) in enumerate(pad_keys):
+        print('%02d: %05d - %s' % (idx + 1, key_idx, key))
 
 
 def find_pad_keys(hash_cache):
@@ -94,7 +97,7 @@ def is_valid_hash_key(hash_cache, idx):
 
 
 def print_pad_key_progress(idx, pad_keys):
-    print('%s - %s' % (idx, len(pad_keys)), flush=True)
+    print('%05d - %02d' % (idx, len(pad_keys)), flush=True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
