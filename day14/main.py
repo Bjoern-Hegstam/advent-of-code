@@ -76,8 +76,6 @@ def find_pad_keys(seed, hash_cache):
         if idx % 500 == 0:
             print_pad_key_progress(idx, pad_keys)
 
-        # Prevent cache from growing too much
-        hash_cache.remove(idx)
         idx += 1
 
     return pad_keys
