@@ -60,11 +60,11 @@ def main(part, files):
     lines = [line.strip() for line in fileinput.input(files)]
     seed = lines[0]
 
-    pad_keys = find_pad_keys(seed, HashCache(seed, stretched=(args.part == 2)))
+    pad_keys = find_pad_keys(HashCache(seed, stretched=(args.part == 2)))
     print(pad_keys)
 
 
-def find_pad_keys(seed, hash_cache):
+def find_pad_keys(hash_cache):
     pad_keys = []
 
     idx = 0
