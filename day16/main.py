@@ -3,7 +3,7 @@
 import fileinput
 import argparse
 
-def main(files, simulate=False, debug=False):
+def main(files):
     discs = []
     lines = [line.strip() for line in fileinput.input(files)]
 
