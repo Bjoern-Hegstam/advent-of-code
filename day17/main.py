@@ -26,21 +26,31 @@ def main(files, part=1):
     queue = deque()
     queue.append(Node((0, 0), ''))
 
-    final_node = None
+    target_paths = []
 
     while len(queue):
-        current = queue.popleft()
-        if current.pos == target_pos:
-            final_node = current
+        if part == 1 and target_paths:
             break
+
+        current = queue.popleft()
 
         for node in generate_neigbors(current, width, height, passcode):
             if DEBUG:
                 print('Child: {}:{}'.format(node.path, node.pos))
-            queue.append(node)
 
-    if final_node:
-        print('Shortest path: {}'.format(final_node.path))
+            if node.pos == target_pos:
+                target_paths.append(node)
+            else:
+                queue.append(node)
+
+    if not target_paths:
+        print('No path found')
+        return
+
+    if part == 1:
+        print('Shortest path: {}'.format(target_paths[0].path))
+    else:
+        print('Longest path length: {}'.format(len(target_paths[-1].path)))
 
 
 DIRECTIONS = {
