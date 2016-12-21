@@ -20,7 +20,7 @@ class SwapPositions:
 
 class SwapLetters:
     def __init__(self):
-        self.pattern = re.compile(r'swap letter (?P<cx>\w) with letter (?P<cy>\w)$')
+        self.pattern = re.compile(r'^swap letter (?P<cx>\w) with letter (?P<cy>\w)$')
 
     def run(self, match, password):
         cx = match.group('cx')
@@ -35,25 +35,36 @@ class SwapLetters:
 
 class RotateFixedDirection:
     def __init__(self):
-        self.pattern = re.compile(r'rotate (?P<dir>left|right) (?P<num_steps>\d+) steps?$')
+        self.pattern = re.compile(r'^rotate (?P<dir>left|right) (?P<num_steps>\d+) steps?$')
 
     def run(self, match, password):
-        print('Match')
         direction = 1 if match.group('dir') == 'left' else -1
         num_steps = int(match.group('num_steps'))
 
         move = direction*num_steps % len(password)
-        print(move)
 
-        new_pass = password[move:] + password[:move]
-        return new_pass
+        return password[move:] + password[:move]
+
+class RotateBasedOnLetterPosition:
+    def __init__(self):
+        self.pattern = re.compile(r'^rotate based on position of letter (?P<cx>\w)$')
+
+    def run(self, match, password):
+        cx = match.group('cx')
+        idx = password.index(cx)
+
+        # Always rotate to the right => move < 0
+        move = -1 - idx - (1 if idx >= 4 else 0)
+
+        return password[move:] + password[:move]
 
 
 def main(files, part='1'):
     operations = [
         SwapPositions(),
         SwapLetters(),
-        RotateFixedDirection()
+        RotateFixedDirection(),
+        RotateBasedOnLetterPosition()
     ]
 
     password = list('abcde')
