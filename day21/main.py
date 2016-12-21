@@ -55,29 +55,55 @@ class RotateBasedOnLetterPosition:
 
         # Always rotate to the right => move < 0
         move = -1 - idx - (1 if idx >= 4 else 0)
+        move %= len(password)
 
         return password[move:] + password[:move]
 
+class ReverseInterval:
+    def __init__(self):
+        self.pattern = re.compile(r'^reverse positions (?P<x>\d+) through (?P<y>\d+)$')
+
+    def run(self, match, password):
+        x = int(match.group('x'))
+        y = int(match.group('y'))
+
+        return password[:x] + list(reversed(password[x:y+1])) + password[y+1:]
+
+
+class MoveLetter:
+    def __init__(self):
+        self.pattern = re.compile(r'^move position (?P<x>\d+) to position (?P<y>\d+)$')
+
+    def run(self, match, password):
+        x = int(match.group('x'))
+        y = int(match.group('y'))
+
+        if x < y:
+            return password[:x] + password[x+1:y+1] + [password[x]] + password[y+1:]
+        else:
+            return password[:y] + [password[x]] + password[y:x] + password[x+1:]
 
 def main(files, part='1'):
     operations = [
         SwapPositions(),
         SwapLetters(),
         RotateFixedDirection(),
-        RotateBasedOnLetterPosition()
+        RotateBasedOnLetterPosition(),
+        ReverseInterval(),
+        MoveLetter()
     ]
 
-    password = list('abcde')
+    password = list('abcdefgh')
 
     for line in fileinput.input(files):
+        print(line.strip())
         for op in operations:
             match = op.pattern.match(line)
             if match:
                 password = op.run(match, password)
+                print(''.join(password))
+                print()
                 break
-
-
-    print(''.join(password))
 
 
 if __name__ == '__main__':
