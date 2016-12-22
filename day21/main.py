@@ -3,6 +3,7 @@
 import fileinput
 import argparse
 import re
+import itertools
 
 DEBUG = False
 
@@ -97,11 +98,22 @@ OPERATIONS = [
 def main(files, part='1'):
     instructions = [line.strip() for line in fileinput.input(files)]
 
-    print(scramble_password('abcdefgh', instructions))
+    if part == '1':
+        print(scramble_password('abcdefgh', instructions))
+    elif part == '2':
+        for pwd in itertools.permutations(list('abcdefgh'), 8):
+            scramled = scramble_password(pwd, instructions)
+            if scramled == 'fbgdceah':
+                print(''.join(pwd))
+                return
 
 
-def scramble_password(pass_str, instructions):
-    password = list(pass_str)
+def scramble_password(password, instructions):
+    if isinstance(password, str) or isinstance(password, tuple):
+        scrambled_pass = list(password)
+    else:
+        assert isinstance(password, list)
+        scrambled_pass = password
 
     for line in instructions:
         if DEBUG:
@@ -109,13 +121,13 @@ def scramble_password(pass_str, instructions):
         for op in OPERATIONS:
             match = op.pattern.match(line)
             if match:
-                password = op.run(match, password)
+                scrambled_pass = op.run(match, scrambled_pass)
                 if DEBUG:
-                    print(''.join(password))
+                    print(''.join(scrambled_pass))
                     print()
                 break
 
-    return ''.join(password)
+    return ''.join(scrambled_pass)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
