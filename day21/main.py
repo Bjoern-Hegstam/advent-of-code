@@ -83,8 +83,8 @@ class MoveLetter:
         else:
             return password[:y] + [password[x]] + password[y:x] + password[x+1:]
 
-def main(files, part='1'):
-    operations = [
+
+OPERATIONS = [
         SwapPositions(),
         SwapLetters(),
         RotateFixedDirection(),
@@ -93,18 +93,29 @@ def main(files, part='1'):
         MoveLetter()
     ]
 
-    password = list('abcdefgh')
 
-    for line in fileinput.input(files):
-        print(line.strip())
-        for op in operations:
+def main(files, part='1'):
+    instructions = [line.strip() for line in fileinput.input(files)]
+
+    print(scramble_password('abcdefgh', instructions))
+
+
+def scramble_password(pass_str, instructions):
+    password = list(pass_str)
+
+    for line in instructions:
+        if DEBUG:
+            print(line)
+        for op in OPERATIONS:
             match = op.pattern.match(line)
             if match:
                 password = op.run(match, password)
-                print(''.join(password))
-                print()
+                if DEBUG:
+                    print(''.join(password))
+                    print()
                 break
 
+    return ''.join(password)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
