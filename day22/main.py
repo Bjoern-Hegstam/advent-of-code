@@ -28,13 +28,26 @@ def main(files, part='1'):
             continue
 
         nodes.append(Node(
-                match.group('x'),
-                match.group('y'),
-                match.group('size'),
-                match.group('used'),
-                match.group('avail'),
-                match.group('used')
+                int(match.group('x')),
+                int(match.group('y')),
+                int(match.group('size')),
+                int(match.group('used')),
+                int(match.group('avail')),
+                int(match.group('used'))
             ))
+
+    if part == '1':
+        print(find_num_viable_pairs(nodes))
+
+
+def find_num_viable_pairs(nodes):
+    count = 0
+    for n1 in nodes:
+        for n2 in nodes:
+            if n1 != n2 and 0 < n1.used <= n2.avail:
+                count += 1
+
+    return count
 
 
 
