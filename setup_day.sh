@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
-day=$1
-mkdir day$day
-touch day$day/input
-touch day$day/main.py
+year=$1
+day=$2
+
+mkdir $year
+cd $year
+mkdir $day
+cd $day
+touch input
+touch main.py
 
