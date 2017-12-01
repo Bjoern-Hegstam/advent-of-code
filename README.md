@@ -1,1 +1,1 @@
-See: http://adventofcode.com/2016
+See: http://adventofcode.com
