@@ -3,10 +3,16 @@
 year=$1
 day=$2
 
-mkdir $year
+if [ ! -d $year ]; then
+    mkdir $year
+fi
 cd $year
-mkdir $day
+
+if [ ! -d $day ]; then
+    mkdir $day
+fi
 cd $day
+
 touch input
 touch main.py
 
