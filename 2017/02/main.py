@@ -4,7 +4,7 @@ def main():
     rows = [[int(s) for s in line.split()] for line in lines]
 
     print('Answer part 1: {}'.format(calc_checksum(rows)))
-    print('Answer part 1: {}'.format(sum_even_division(rows)))
+    print('Answer part 2: {}'.format(sum_even_division(rows)))
 
 
 def calc_checksum(rows):
