@@ -5,8 +5,8 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    print('Answer part one: {}'.format(solve_part_one(347991)))
-    print('Answer part two: {}'.format(solve_part_two(347991)))
+    print('Answer part 1: {}'.format(solve_part_one(347991)))
+    print('Answer part 2: {}'.format(solve_part_two(347991)))
 
 
 def solve_part_one(val):
