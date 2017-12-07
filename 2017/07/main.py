@@ -1,7 +1,10 @@
 import re
+import logging
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
+
     with open('input') as f:
         lines = f.readlines()
     programs = build_program_tree(lines)
@@ -35,16 +38,20 @@ def build_program_tree(lines):
 
 
 def solve_part_two(programs):
+    logger = logging.getLogger('part_two')
+
     root = [p for p in programs.values() if not p.parent][0]
 
     current_program = root
     while True:
         unbalanced_child, expected_weight = find_unbalanced(current_program.children)
         if not unbalanced_child.children:
+            logger.debug(unbalanced_child.name)
             return expected_weight
 
         unbalanced_grandchild, _ = find_unbalanced(unbalanced_child.children)
         if not unbalanced_grandchild:
+            logger.debug(unbalanced_child.name)
             return expected_weight - sum(get_disc_weight(c) for c in unbalanced_child.children)
         else:
             current_program = unbalanced_child
