@@ -37,29 +37,28 @@ def build_program_tree(lines):
 def solve_part_two(programs):
     root = [p for p in programs.values() if not p.parent][0]
 
-    disc_weights = {}
-
-    calc_disc_weights(root, disc_weights)
-
     current_program = root
     while True:
-        unbalanced_child, expected_weight = find_unbalanced(current_program.children, disc_weights)
+        unbalanced_child, expected_weight = find_unbalanced(current_program.children)
         if not unbalanced_child.children:
             return expected_weight
 
-        unbalanced_grandchild, _ = find_unbalanced(unbalanced_child.children, disc_weights)
+        unbalanced_grandchild, _ = find_unbalanced(unbalanced_child.children)
         if not unbalanced_grandchild:
-            return expected_weight - sum(disc_weights[c.name] for c in unbalanced_child.children)
+            return expected_weight - sum(get_disc_weight(c) for c in unbalanced_child.children)
         else:
             current_program = unbalanced_child
 
 
-def calc_disc_weights(program, disc_weights):
+disc_weights = {}
+
+
+def get_disc_weight(program):
     if program.name in disc_weights:
         return disc_weights[program.name]
 
     if program.children:
-        child_weights = sum(calc_disc_weights(child, disc_weights) for child in program.children)
+        child_weights = sum(get_disc_weight(child) for child in program.children)
     else:
         child_weights = 0
 
@@ -69,8 +68,8 @@ def calc_disc_weights(program, disc_weights):
     )
 
 
-def find_unbalanced(programs, disc_weights):
-    weights = [(p, disc_weights[p.name]) for p in programs]
+def find_unbalanced(programs):
+    weights = [(p, get_disc_weight(p)) for p in programs]
     disc_weight_hist = {}
     for p, disc_weight in weights:
         disc_weight_hist[disc_weight] = disc_weight_hist.get(disc_weight, 0) + 1
