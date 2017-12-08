@@ -35,8 +35,16 @@ def parse_instructions(lines):
 
 def parse_instruction(line):
     match = re.match(
-        '(?P<op_reg_name>\w+) (?P<op_type>inc|dec) (?P<op_val>-?\d+) if (?P<cond_reg_name>\w+) (?P<cond_op>[!><=]+) (?P<cond_val>-?\d+)',
-        line)
+        '(?P<op_reg_name>\w+) '
+        '(?P<op_type>inc|dec) '
+        '(?P<op_val>-?\d+) '
+        'if '
+        '(?P<cond_reg_name>\w+) '
+        '(?P<cond_op>[!><=]+) '
+        '(?P<cond_val>-?\d+)',
+        line
+    )
+
     if not match:
         raise Exception('Could not parse instruction', line)
 
@@ -107,7 +115,10 @@ c dec -10 if a >= 1
 c inc -20 if c == 10
 """.strip().splitlines()
 
-assert solve_part_one(parse_instructions(test_input)) == 1
+test_instructions = parse_instructions(test_input)
+
+assert [str(inst) for inst in test_instructions] == test_input
+assert solve_part_one(test_instructions) == 1
 
 if __name__ == '__main__':
     main()
