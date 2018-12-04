@@ -12,12 +12,30 @@ def main():
     with open('input') as f:
         lines = f.readlines()
 
+    # lines = [
+    #     '[1518-11-01 00:00] Guard #10 begins shift',
+    #     '[1518-11-01 00:05] falls asleep',
+    #     '[1518-11-01 00:25] wakes up',
+    #     '[1518-11-01 00:30] falls asleep',
+    #     '[1518-11-01 00:55] wakes up',
+    #     '[1518-11-01 23:58] Guard #99 begins shift',
+    #     '[1518-11-02 00:40] falls asleep',
+    #     '[1518-11-02 00:50] wakes up',
+    #     '[1518-11-03 00:05] Guard #10 begins shift',
+    #     '[1518-11-03 00:24] falls asleep',
+    #     '[1518-11-03 00:29] wakes up',
+    #     '[1518-11-04 00:02] Guard #99 begins shift',
+    #     '[1518-11-04 00:36] falls asleep',
+    #     '[1518-11-04 00:46] wakes up',
+    #     '[1518-11-05 00:03] Guard #99 begins shift',
+    #     '[1518-11-05 00:45] falls asleep',
+    #     '[1518-11-05 00:55] wakes up',
+    # ]
+
     log_entries = [parse_log_entry(line) for line in lines]
     log_entries.sort(key=attrgetter('timestamp'))
 
-    answer_part_one = solve_part_one(log_entries)
-
-    print('Answer part 1: {}'.format(answer_part_one))
+    solve_part_one(log_entries)
 
 
 def parse_log_entry(line):
@@ -33,26 +51,42 @@ def solve_part_one(log_entries):
     sleep_log = compile_guard_sleep_log(log_entries)
 
     guard_sleep_times = {}
+    sleepiest_minutes_per_guard = {}
+    most_frequent_guard_per_minute = {}
 
-    for guard_id, durations in sleep_log.items():
-        for (sleep_from, sleep_to) in durations:
+    for guard_id, sleep_durations in sleep_log.items():
+        sleep_minutes_histogram = {}
+        for (sleep_from, sleep_to) in sleep_durations:
             sleep_minutes = (sleep_to - sleep_from).total_seconds() / 60
             guard_sleep_times[guard_id] = sleep_minutes + guard_sleep_times.get(guard_id, 0)
+
+            timestamp = sleep_from
+            while timestamp < sleep_to:
+                sleep_minutes_histogram[timestamp.minute] = 1 + sleep_minutes_histogram.get(timestamp.minute, 0)
+                timestamp += timedelta(minutes=1)
+
+        sleepiest_minutes_per_guard[guard_id] = max(sleep_minutes_histogram.items(), key=itemgetter(1))[0]
+        for minute, sleep_times in sleep_minutes_histogram.items():
+            if minute not in most_frequent_guard_per_minute:
+                most_frequent_guard_per_minute[minute] = (guard_id, sleep_times)
+            elif sleep_times > most_frequent_guard_per_minute.get(minute)[1]:
+                most_frequent_guard_per_minute[minute] = (guard_id, sleep_times)
 
     sleepiest_guard_id = max(guard_sleep_times.items(), key=itemgetter(1))[0]
     print('Sleepiest guard id: {}'.format(sleepiest_guard_id))
 
-    sleep_minutes = {}
-    for (sleep_from, sleep_to) in sleep_log[sleepiest_guard_id]:
-        timestamp = sleep_from
-        while timestamp < sleep_to:
-            sleep_minutes[timestamp.minute] = 1 + sleep_minutes.get(timestamp.minute, 0)
-            timestamp += timedelta(minutes=1)
-
-    sleepiest_minute = max(sleep_minutes.items(), key=itemgetter(1))[0]
+    sleepiest_minute = sleepiest_minutes_per_guard[sleepiest_guard_id]
     print('Sleepiest minute: {}'.format(sleepiest_minute))
 
-    return sleepiest_guard_id * sleepiest_minute
+    print('Answer part 1: {}'.format(sleepiest_guard_id * sleepiest_minute))
+
+    most_frequent_minute = max(most_frequent_guard_per_minute.items(), key=lambda item: item[1][1])[0]
+    print('Most frequent minute: {}'.format(most_frequent_minute))
+
+    (most_frequent_guard_id, sleep_times) = most_frequent_guard_per_minute[most_frequent_minute]
+    print('Most frequent minute guard id: {} [sleep_times={}]'.format(most_frequent_guard_id, sleep_times))
+
+    print('Answer part 2: {}'.format(most_frequent_minute * most_frequent_guard_id))
 
 
 def compile_guard_sleep_log(log_entries):
