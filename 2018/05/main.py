@@ -1,4 +1,7 @@
+from collections import deque
+
 alphabet = 'abcdefghijklmnopqrstuvwxyz'
+unit_pairs = list(zip(alphabet, alphabet.upper())) + list(zip(alphabet.upper(), alphabet))
 
 
 def main():
@@ -11,35 +14,24 @@ def main():
 
     reacted_lengths = {}
     for unit_pair in zip(alphabet, alphabet.upper()):
-        print('Removing unit pair {}'.format(unit_pair))
-        polymer = base_polymer.replace(unit_pair[0], '').replace(unit_pair[1], '')
-        length = len(react_polymer(polymer))
-        reacted_lengths[unit_pair] = length
-
-        print('Removing unit pair {} gave length {}'.format(unit_pair, length))
+        reacted_lengths[unit_pair] = len(react_polymer(base_polymer, excluded_unit_pair=unit_pair))
 
     print('Answer part 2: {}'.format(min(reacted_lengths.values())))
 
 
-def react_polymer(source_polymer):
-    unit_pairs = list(zip(alphabet, alphabet.upper())) + list(zip(alphabet.upper(), alphabet))
+def react_polymer(source_polymer, excluded_unit_pair=None):
+    polymer = deque()
+    for unit in source_polymer:
+        if excluded_unit_pair and (unit == excluded_unit_pair[0] or unit == excluded_unit_pair[1]):
+            continue
+        elif not polymer:
+            polymer.append(unit)
+        elif (polymer[-1], unit) in unit_pairs:
+            polymer.pop()
+        else:
+            polymer.append(unit)
 
-    print('Reacting polymer')
-    polymer = list(source_polymer)
-    while True:
-        polymer_reacted = False
-
-        i = 0
-        while i < len(polymer) - 1:
-            if (polymer[i], polymer[i + 1]) in unit_pairs:
-                del polymer[i:i+2]
-                polymer_reacted = True
-                continue
-            else:
-                i += 1
-
-        if not polymer_reacted:
-            return polymer
+    return list(polymer)
 
 
 assert react_polymer('dabAcCaCBAcCcaDA') == list('dabCBAcaDA')
