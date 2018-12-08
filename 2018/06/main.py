@@ -1,5 +1,4 @@
 import math
-import operator
 from collections import namedtuple
 
 alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -12,40 +11,36 @@ def main():
     with open('input') as f:
         lines = f.readlines()
 
-    # lines = [
-    #     '1, 1',
-    #     '1, 6',
-    #     '8, 3',
-    #     '3, 4',
-    #     '5, 5',
-    #     '8, 9'
-    # ]
-
     raw_points = [line.split(', ') for line in lines]
     points = [Point(int(p[0]), int(p[1])) for p in raw_points]
-
     bounding_box = pad(get_bounding_box(points), 1)
-    print(bounding_box)
 
+    area_counts = find_bounded_area_sizes(points, bounding_box)
+    print('Answer part 1: {}'.format(max(area_counts.values())))
+
+    region_size = len([target for target in get_points(bounding_box) if sum([manhattan_dist(p, target) for p in points]) < 1e4])
+    print('Answer part 2: {}'.format(region_size))
+
+
+def find_bounded_area_sizes(points, bounding_box):
     point_assignments = {}
     for p in get_points(bounding_box):
         nearest_point = get_nearest_point(points, p, manhattan_dist)
         point_assignments[p] = nearest_point
 
     # Start with all points allowed
-    area_counts = dict(zip(range(len(points)), [0] * len(points)))
+    bounded_area_sizes = dict(zip(range(len(points)), [0] * len(points)))
 
     # Trim away any point on an edge
     for p, idx in point_assignments.items():
-        if idx not in area_counts:
+        if idx not in bounded_area_sizes:
             continue
         if p.x == bounding_box.x or p.y == bounding_box.y or p.x == (bounding_box.x + bounding_box.width - 1) or p.y == (bounding_box.y + bounding_box.height - 1):
-            del area_counts[idx]
+            del bounded_area_sizes[idx]
         else:
-            area_counts[idx] += 1
+            bounded_area_sizes[idx] += 1
 
-    # print_point_assignments(bounding_box, point_assignments)
-    print('Answer part 1: {}'.format(max(area_counts.values())))
+    return bounded_area_sizes
 
 
 def get_bounding_box(points):
