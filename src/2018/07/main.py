@@ -1,7 +1,7 @@
 from collections import namedtuple
 from operator import attrgetter
 
-alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+from util.constants import ALPHABET_UPPER
 
 StepRequirement = namedtuple('StepRequirement', 'req, step')
 WorkItem = namedtuple('WorkItem', 'step, finished_at')
@@ -43,7 +43,7 @@ def determine_step_order(step_requirements, worker_count=1, processing_takes_tim
             current_work_items.append(
                 WorkItem(
                     next_step,
-                    current_time + base_processing_time + 1 + alphabet.find(next_step) if processing_takes_time else 0
+                    current_time + base_processing_time + 1 + ALPHABET_UPPER.find(next_step) if processing_takes_time else 0
                 )
             )
 

@@ -1,7 +1,8 @@
 from collections import deque
 
-alphabet = 'abcdefghijklmnopqrstuvwxyz'
-unit_pairs = list(zip(alphabet, alphabet.upper())) + list(zip(alphabet.upper(), alphabet))
+from util.constants import ALPHABET_LOWER, ALPHABET_UPPER
+
+unit_pairs = list(zip(ALPHABET_LOWER, ALPHABET_UPPER)) + list(zip(ALPHABET_UPPER, ALPHABET_LOWER))
 
 
 def main():
@@ -13,7 +14,7 @@ def main():
     print('Answer part 1: {}'.format(len(reduced_polymer)))
 
     reacted_lengths = {}
-    for unit_pair in zip(alphabet, alphabet.upper()):
+    for unit_pair in zip(ALPHABET_LOWER, ALPHABET_UPPER):
         reacted_lengths[unit_pair] = len(react_polymer(base_polymer, excluded_unit_pair=unit_pair))
 
     print('Answer part 2: {}'.format(min(reacted_lengths.values())))

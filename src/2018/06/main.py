@@ -1,10 +1,9 @@
 import math
-from collections import namedtuple
 
-alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+from util.constants import ALPHABET_LOWER, ALPHABET_UPPER
+from util.geometry import Rectangle, Point, manhattan_dist
 
-Point = namedtuple('Point', 'x, y')
-Rectangle = namedtuple('Rectangle', 'x, y, width, height')
+alphabet = ALPHABET_LOWER + ALPHABET_UPPER
 
 
 def main():
@@ -89,10 +88,6 @@ def get_nearest_point(points, target, dist_fun):
         return -1
     else:
         return min_dist_indices[0]
-
-
-def manhattan_dist(p1, p2):
-    return abs(p1.x - p2.x) + abs(p1.y - p2.y)
 
 
 def print_point_assignments(bounding_box, point_assignments):
