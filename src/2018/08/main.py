@@ -16,6 +16,10 @@ def main():
     assert metadata_count == 45868
     print('Answer part 1: {}'.format(metadata_count))
 
+    node_value = calculate_node_value(root_node)
+    assert node_value == 19724
+    print('Answer part 2: {}'.format(node_value))
+
 
 def count_metadata(nodes):
     return sum(sum(node.metadata) for node in nodes.values())
@@ -51,7 +55,17 @@ def generate_node_commands(node):
         yield 'parse_child', node
 
 
-assert count_metadata(build_tree([2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2])[1]) == 138
+def calculate_node_value(node):
+    if not node.children:
+        return sum(node.metadata)
+
+    return sum(calculate_node_value(node.children[idx - 1]) for idx in node.metadata if idx < node.header.child_count + 1)
+
+
+test_root_node, test_nodes = build_tree([2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2])
+assert count_metadata(test_nodes) == 138
+assert calculate_node_value(test_root_node) == 66
+
 
 if __name__ == '__main__':
     main()
