@@ -1,7 +1,5 @@
-import math
-
 from util.constants import ALPHABET_LOWER, ALPHABET_UPPER
-from util.geometry import Rectangle, Point, manhattan_dist
+from util.geometry import Rectangle, Vector2, manhattan_dist, get_bounding_box, get_points, get_nearest_point
 
 alphabet = ALPHABET_LOWER + ALPHABET_UPPER
 
@@ -11,7 +9,7 @@ def main():
         lines = f.readlines()
 
     raw_points = [line.split(', ') for line in lines]
-    points = [Point(int(p[0]), int(p[1])) for p in raw_points]
+    points = [Vector2(int(p[0]), int(p[1])) for p in raw_points]
     bounding_box = pad(get_bounding_box(points), 1)
 
     area_counts = find_bounded_area_sizes(points, bounding_box)
@@ -42,21 +40,13 @@ def find_bounded_area_sizes(points, bounding_box):
     return bounded_area_sizes
 
 
-def get_bounding_box(points):
-    min_x = min(points, key=lambda p: p.x).x
-    min_y = min(points, key=lambda p: p.y).y
-    max_x = max(points, key=lambda p: p.x).x
-    max_y = max(points, key=lambda p: p.y).y
-    return Rectangle(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
-
-
 assert get_bounding_box([
-    Point(1, 1),
-    Point(1, 6),
-    Point(8, 3),
-    Point(3, 4),
-    Point(5, 5),
-    Point(8, 9)
+    Vector2(1, 1),
+    Vector2(1, 6),
+    Vector2(8, 3),
+    Vector2(3, 4),
+    Vector2(5, 5),
+    Vector2(8, 9)
 ]) == Rectangle(1, 1, 8, 9)
 
 
@@ -67,33 +57,10 @@ def pad(rect, size):
 assert pad(Rectangle(1, 1, 8, 9), 1) == Rectangle(0, 0, 10, 11)
 
 
-def get_points(rect):
-    for dy in range(rect.height):
-        for dx in range(rect.width):
-            yield Point(rect.x + dx, rect.y + dy)
-
-
-def get_nearest_point(points, target, dist_fun):
-    distances = [dist_fun(p, target) for p in points]
-    min_dist = math.inf
-    min_dist_indices = []
-    for idx, dist in enumerate(distances):
-        if dist < min_dist:
-            min_dist = dist
-            min_dist_indices = [idx]
-        elif dist == min_dist:
-            min_dist_indices.append(idx)
-
-    if len(min_dist_indices) > 1:
-        return -1
-    else:
-        return min_dist_indices[0]
-
-
 def print_point_assignments(bounding_box, point_assignments):
     for dy in range(bounding_box.height):
         for dx in range(bounding_box.width):
-            p = Point(bounding_box.x + dx, bounding_box.y + dy)
+            p = Vector2(bounding_box.x + dx, bounding_box.y + dy)
             assigned_index = point_assignments[p]
             if assigned_index == -1:
                 print('.', end='')
