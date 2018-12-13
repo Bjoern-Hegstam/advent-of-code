@@ -125,10 +125,7 @@ def solve_part_two(railroad, initial_trains):
     tick_count = 0
     trains = initial_trains
     while True:
-        trains, crash_position = tick(railroad, trains, remove_crashed_trains=True)
-        if crash_position:
-            print('Crash: {}'.format(crash_position))
-            break
+        trains, _ = tick(railroad, trains, remove_crashed_trains=True)
 
         tick_count += 1
         if DEBUG:
