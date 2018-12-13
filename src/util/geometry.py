@@ -2,7 +2,27 @@ import math
 from collections import namedtuple
 
 Rectangle = namedtuple('Rectangle', 'x, y, width, height')
-Vector2 = namedtuple('Vector2', 'x, y')
+
+
+class Vector2:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __add__(self, other):
+        return Vector2(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Vector2(self.x - other.x, self.y - other.y)
+
+    def __hash__(self):
+        return 31 * self.x + self.y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __repr__(self):
+        return 'Vector2(x={}, y={})'.format(self.x, self.y)
 
 
 def manhattan_dist(p1, p2):
