@@ -14,6 +14,7 @@ class Directions:
     RIGHT = Vector2(1, 0)
 
 
+# Map train direction when entering the rail to exit direction
 RAIL_DIRECTIONS_PER_CHAR = {
     '/': {
         Directions.UP: Directions.RIGHT,
