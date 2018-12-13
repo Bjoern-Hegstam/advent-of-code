@@ -48,66 +48,45 @@ CROSSING = '+'
 
 
 def main():
-    with open('example_input') as f:
+    base_input = 'input'
+    with open(base_input) as f:
         lines = f.readlines()
 
-    railroad, trains = parse_input([line.rstrip() for line in lines])
+    with open('{}_without_trains'.format(base_input)) as f:
+        lines_without_trains = f.readlines()
+
+    railroad, trains = parse_input(
+        [line.rstrip() for line in lines_without_trains],
+        [line.rstrip() for line in lines]
+    )
     draw_railroad(railroad, trains)
 
-    for i in range(15):
+    tick_count = 0
+    while True:
         trains, crash_position = tick(railroad, trains)
         if crash_position:
             print('Crash: {}'.format(crash_position))
             break
-        draw_railroad(railroad, trains)
 
+        tick_count += 1
+        print('Tick: {}'.format(tick_count))
+        # draw_railroad(railroad, trains)
 
-def parse_input(lines):
+    print('Answer part 1: {},{}'.format(crash_position.x, crash_position.y))
+
+def parse_input(lines_without_trains, lines):
     railroad = {}
     trains = []
 
+    for y, line in enumerate(lines_without_trains):
+        for x, c in enumerate(line):
+            if c != ' ':
+                railroad[Vector2(x, y)] = c
+
     for y, line in enumerate(lines):
         for x, c in enumerate(line):
-            if c == ' ':
-                continue
-
-            position = Vector2(x, y)
             if c in TRAIN_DIRECTIONS_PER_CHAR.keys():
-                trains.append(Train(len(trains), position, TRAIN_DIRECTIONS_PER_CHAR[c], 0))
-            else:
-                railroad[position] = c
-
-    # Figure out rail pieces for positions that were covered by a train
-    for train in trains:
-        position = train.position
-        up = railroad.get(position + Directions.UP)
-        down = railroad.get(position + Directions.DOWN)
-        left = railroad.get(position + Directions.LEFT)
-        right = railroad.get(position + Directions.RIGHT)
-
-        directions = set()
-        if up and up in '+/\\|':
-            directions.add(Directions.UP)
-        if down and down in '+/\\|':
-            directions.add(Directions.DOWN)
-        if left and left in '+/\\-':
-            directions.add(Directions.LEFT)
-        if right and right in '+/\\-':
-            directions.add(Directions.RIGHT)
-
-        if directions == {Directions.RIGHT, Directions.DOWN}:
-            railroad[position] = '/'
-        elif directions == {Directions.LEFT, Directions.UP}:
-            railroad[position] = '/'
-        elif directions == {Directions.UP, Directions.RIGHT}:
-            railroad[position] = '\\'
-        elif directions == {Directions.LEFT, Directions.DOWN}:
-            railroad[position] = '\\'
-        elif directions == {Directions.UP, Directions.DOWN}:
-            railroad[position] = '|'
-        else:
-            assert directions == {Directions.LEFT, Directions.RIGHT}
-            railroad[position] = '-'
+                trains.append(Train(len(trains), Vector2(x, y), TRAIN_DIRECTIONS_PER_CHAR[c], 0))
 
     return railroad, trains
 
