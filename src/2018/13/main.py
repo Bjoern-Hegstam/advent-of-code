@@ -2,6 +2,8 @@ from collections import namedtuple
 
 from util.geometry import Vector2, get_bounding_box
 
+DEBUG = True
+
 Train = namedtuple('Train', 'id, position, direction, turn_count')
 
 
@@ -59,20 +61,16 @@ def main():
         [line.rstrip() for line in lines_without_trains],
         [line.rstrip() for line in lines]
     )
-    draw_railroad(railroad, trains)
 
-    tick_count = 0
-    while True:
-        trains, crash_position = tick(railroad, trains)
-        if crash_position:
-            print('Crash: {}'.format(crash_position))
-            break
+    if DEBUG:
+        draw_railroad(railroad, trains)
 
-        tick_count += 1
-        print('Tick: {}'.format(tick_count))
-        # draw_railroad(railroad, trains)
-
+    crash_position = solve_part_one(railroad, trains)
     print('Answer part 1: {},{}'.format(crash_position.x, crash_position.y))
+
+    last_cart_position = solve_part_two(railroad, trains)
+    print('Answer part 2: {},{}'.format(last_cart_position.x, last_cart_position.y))
+
 
 def parse_input(lines_without_trains, lines):
     railroad = {}
@@ -106,11 +104,49 @@ def draw_railroad(railroad, trains):
         print('')
 
 
-def tick(railroad, trains):
+def solve_part_one(railroad, initial_trains):
+    tick_count = 0
+    trains = initial_trains
+    while True:
+        trains, crash_position = tick(railroad, trains)
+        if crash_position:
+            print('Crash: {}'.format(crash_position))
+            break
+
+        tick_count += 1
+        if DEBUG:
+            print('Tick: {}'.format(tick_count))
+
+    return crash_position
+
+
+def solve_part_two(railroad, initial_trains):
+    tick_count = 0
+    trains = initial_trains
+    while True:
+        trains, crash_position = tick(railroad, trains, remove_crashed_trains=True)
+        if crash_position:
+            print('Crash: {}'.format(crash_position))
+            break
+
+        tick_count += 1
+        if DEBUG:
+            print('Tick: {}'.format(tick_count))
+            print('Train count: {}'.format(len(trains)))
+
+        if len(trains) == 1:
+            return trains[0].position
+
+
+def tick(railroad, trains, remove_crashed_trains=False):
     updated_trains = []
     current_train_positions = {train.id: train.position for train in trains}
+    crash_positions = set()
 
     for train in sorted(trains, key=lambda t: (t.position.y, t.position.x)):
+        if train.position in crash_positions:
+            continue
+
         current_rail = railroad[train.position]
         new_direction = None
         turn_count = train.turn_count
@@ -128,10 +164,15 @@ def tick(railroad, trains):
 
         new_position = train.position + new_direction
         if new_position in current_train_positions.values():
-            return None, new_position
+            if remove_crashed_trains:
+                crash_positions.add(new_position)
+            else:
+                return None, new_position
         current_train_positions[train.id] = new_position
         updated_trains.append(Train(train.id, new_position, new_direction, turn_count))
 
+    if remove_crashed_trains:
+        updated_trains = [train for train in updated_trains if train.position not in crash_positions]
     return updated_trains, None
 
 
