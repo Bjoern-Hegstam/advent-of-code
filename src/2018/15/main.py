@@ -56,7 +56,6 @@ def simulate_combat(filename, elf_attack_power=3, stop_after_first_elf_death=Fal
             actor.attack_power = elf_attack_power
 
     completed_rounds_count = 0
-    elf_died = False
 
     if DEBUG:
         print('Initially:'.format(completed_rounds_count))
@@ -65,6 +64,8 @@ def simulate_combat(filename, elf_attack_power=3, stop_after_first_elf_death=Fal
 
     while True:
         actors, eliminated_actors, full_round_completed = tick(board, actors)
+        elf_has_died = BoardMarker.ELF in {actor.marker for actor in eliminated_actors}
+
         if not full_round_completed:
             if DEBUG:
                 print('Round {} aborted prematurely'.format(completed_rounds_count + 1))
@@ -72,8 +73,8 @@ def simulate_combat(filename, elf_attack_power=3, stop_after_first_elf_death=Fal
                 print('')
             break
 
-        if stop_after_first_elf_death and BoardMarker.ELF in {actor.marker for actor in eliminated_actors}:
-            elf_died = True
+        if stop_after_first_elf_death and elf_has_died:
+            elf_has_died = True
             break
 
         completed_rounds_count += 1
@@ -85,7 +86,7 @@ def simulate_combat(filename, elf_attack_power=3, stop_after_first_elf_death=Fal
 
     sum_of_remaining_hit_points = sum(actor.hp for actor in actors)
 
-    combat_result = CombatResult(completed_rounds_count, sum_of_remaining_hit_points, elf_died, elf_attack_power)
+    combat_result = CombatResult(completed_rounds_count, sum_of_remaining_hit_points, elf_has_died, elf_attack_power)
     print('simulate_combat[{}] => {}'.format(filename, combat_result))
     return combat_result
 
@@ -226,7 +227,11 @@ assert simulate_combat('example_combat_4')[0:2] == (35, 793)
 assert simulate_combat('example_combat_5')[0:2] == (54, 536)
 assert simulate_combat('example_combat_6')[0:2] == (20, 937)
 
-assert find_optimal_elf_attack_power('example_combat_1').elf_attack_power == 15
+assert find_optimal_elf_attack_power('example_combat_1') == CombatResult(29, 172, False, 15)
+assert find_optimal_elf_attack_power('example_combat_3') == CombatResult(33, 948, False, 4)
+assert find_optimal_elf_attack_power('example_combat_4') == CombatResult(37, 94, False, 15)
+assert find_optimal_elf_attack_power('example_combat_5') == CombatResult(39, 166, False, 12)
+assert find_optimal_elf_attack_power('example_combat_6') == CombatResult(30, 38, False, 34)
 
 if __name__ == '__main__':
     main()
