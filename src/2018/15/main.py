@@ -1,9 +1,7 @@
-from collections import deque
-
 from util.geometry import Vector2, get_bounding_box, Direction
 from util.path import multi_bfs_search
 
-DEBUG = True
+DEBUG = False
 
 
 class BoardMarker:
@@ -25,7 +23,8 @@ class Actor:
 
 
 def main():
-    pass
+    completed_rounds_count, sum_of_remaining_hit_points = simulate_combat('input')
+    print('Answer part 1: {}'.format(completed_rounds_count * sum_of_remaining_hit_points))
 
 
 def simulate_combat(filename):
@@ -43,6 +42,8 @@ def simulate_combat(filename):
         if not full_round_completed:
             if DEBUG:
                 print('Round {} aborted prematurely'.format(completed_rounds_count + 1))
+                draw(board, actors)
+                print('')
             break
         completed_rounds_count += 1
 
@@ -95,14 +96,14 @@ def draw(board, actors):
 
 
 def tick(board, actors):
-    remaining_actor_marker_types = {actor.marker for actor in actors}
-    if len(remaining_actor_marker_types) < 2:
-        # At least one side of the battle has fallen
-        return actors, False
-
     actor_positions_in_priority_order = sorted([actor.position for actor in actors], key=lambda p: (p.y, p.x))
 
     for actor_position in actor_positions_in_priority_order:
+        remaining_actor_marker_types = {actor.marker for actor in actors if actor.hp > 0}
+        if len(remaining_actor_marker_types) < 2:
+            # At least one side of the battle has fallen
+            return [actor for actor in actors if actor.hp > 0], False
+
         actors_by_position = {actor.position: actor for actor in actors}
 
         current_actor = actors_by_position[actor_position]
@@ -177,7 +178,10 @@ def is_target(current_actor, possible_target):
     return possible_target.marker != current_actor.marker
 
 
-assert simulate_combat('example_combat_1') == (47, 590)
+# assert simulate_combat('example_combat_1') == (47, 590)
+DEBUG = True
+assert simulate_combat('example_combat_2') == (37, 982)
+DEBUG = False
 
 if __name__ == '__main__':
     main()
