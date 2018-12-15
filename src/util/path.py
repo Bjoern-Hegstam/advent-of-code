@@ -26,3 +26,41 @@ def a_star_search(initial_state, h_fun, move_fun):
                 previous[neighbor] = current_state
 
     return dict(fail=True, front=len(frontier), prev=len(previous))
+
+
+def multi_bfs_search(initial_state, move_fun, target_states):
+    """
+    Find the shortest path to one of the specified target states. Multiple paths are returned in case of a tie.
+    :param initial_state:
+    :param move_fun: Function that given a state generates all possible neighbor states
+    :param target_states: Targets states to find paths to
+    :return: A list of paths to all specified targets that could be reached sorted by cost
+    """
+    frontier = [(0, initial_state)]  # Priority queue of (cost, State)
+    previous = {initial_state: None}  # From which state did we get to the state
+    path_cost = {initial_state: 0}  # Cost of best path to a state
+
+    shortest_path_cost = float('inf')
+    target_paths = []
+
+    while frontier:
+        (f, current_state) = heappop(frontier)
+
+        if current_state in target_states:
+            if f > shortest_path_cost:
+                return target_paths
+
+            shortest_path_cost = f
+            target_paths.append(path(previous, current_state))
+
+            if len(target_paths) == len(target_states):
+                return target_paths
+
+        for neighbor in move_fun(current_state):
+            new_cost = path_cost[current_state] + 1
+            if neighbor not in path_cost or new_cost < path_cost[neighbor]:
+                heappush(frontier, (new_cost, neighbor))
+                path_cost[neighbor] = new_cost
+                previous[neighbor] = current_state
+
+    return target_paths
