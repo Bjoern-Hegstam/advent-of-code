@@ -7,7 +7,7 @@ DEBUG = True
 Train = namedtuple('Train', 'id, position, direction, turn_count')
 
 
-class Directions:
+class Direction:
     UP = Vector2(0, -1)
     DOWN = Vector2(0, 1)
     LEFT = Vector2(-1, 0)
@@ -17,32 +17,32 @@ class Directions:
 # Map train direction when entering the rail to exit direction
 RAIL_DIRECTIONS_PER_CHAR = {
     '/': {
-        Directions.UP: Directions.RIGHT,
-        Directions.DOWN: Directions.LEFT,
-        Directions.LEFT: Directions.DOWN,
-        Directions.RIGHT: Directions.UP
+        Direction.UP: Direction.RIGHT,
+        Direction.DOWN: Direction.LEFT,
+        Direction.LEFT: Direction.DOWN,
+        Direction.RIGHT: Direction.UP
     },
     '\\': {
-        Directions.UP: Directions.LEFT,
-        Directions.DOWN: Directions.RIGHT,
-        Directions.LEFT: Directions.UP,
-        Directions.RIGHT: Directions.DOWN
+        Direction.UP: Direction.LEFT,
+        Direction.DOWN: Direction.RIGHT,
+        Direction.LEFT: Direction.UP,
+        Direction.RIGHT: Direction.DOWN
     },
     '|': {
-        Directions.UP: Directions.UP,
-        Directions.DOWN: Directions.DOWN
+        Direction.UP: Direction.UP,
+        Direction.DOWN: Direction.DOWN
     },
     '-': {
-        Directions.LEFT: Directions.LEFT,
-        Directions.RIGHT: Directions.RIGHT
+        Direction.LEFT: Direction.LEFT,
+        Direction.RIGHT: Direction.RIGHT
     }
 }
 
 TRAIN_DIRECTIONS_PER_CHAR = {
-    '^': Directions.UP,
-    'v': Directions.DOWN,
-    '<': Directions.LEFT,
-    '>': Directions.RIGHT
+    '^': Direction.UP,
+    'v': Direction.DOWN,
+    '<': Direction.LEFT,
+    '>': Direction.RIGHT
 }
 
 TRAIN_CHAR_PER_DIRECTION = {v: k for k, v in TRAIN_DIRECTIONS_PER_CHAR.items()}
