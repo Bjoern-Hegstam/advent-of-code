@@ -34,7 +34,7 @@ def simulate_combat(filename):
     completed_rounds_count = 0
 
     if DEBUG:
-        print('Round {}'.format(completed_rounds_count))
+        print('Initially:'.format(completed_rounds_count))
         draw(board, actors)
         print('')
 
@@ -47,7 +47,7 @@ def simulate_combat(filename):
         completed_rounds_count += 1
 
         if DEBUG:
-            print('After {} round(s)'.format(completed_rounds_count))
+            print('After {} round(s):'.format(completed_rounds_count))
             draw(board, actors)
             print('')
 
@@ -79,15 +79,19 @@ def load_combat_setup(filename):
 
 def draw(board, actors):
     bounding_box = get_bounding_box(board.keys())
-    actor_markers = {actor.position: actor.marker for actor in actors}
+    actors_by_position = {actor.position: actor for actor in actors}
     for y in range(bounding_box.height):
+        actors_drawn_on_line = []
         for x in range(bounding_box.width):
             position = Vector2(x, y)
-            if position in actor_markers.keys():
-                print(actor_markers[position], end='')
+            if position in actors_by_position.keys():
+                actor = actors_by_position[position]
+                print(actor.marker, end='')
+                actors_drawn_on_line.append(actor)
             else:
                 print(board[position], end='')
-        print('')
+        print('   ', end='')
+        print(', '.join('{}({})'.format(actor.marker, actor.hp) for actor in actors_drawn_on_line))
 
 
 def tick(board, actors):
@@ -97,9 +101,10 @@ def tick(board, actors):
         return actors, False
 
     actor_positions_in_priority_order = sorted([actor.position for actor in actors], key=lambda p: (p.y, p.x))
-    actors_by_position = {actor.position: actor for actor in actors}
 
     for actor_position in actor_positions_in_priority_order:
+        actors_by_position = {actor.position: actor for actor in actors}
+
         current_actor = actors_by_position[actor_position]
         adjacent_target = find_adjacent_target(current_actor, actors_by_position)
 
