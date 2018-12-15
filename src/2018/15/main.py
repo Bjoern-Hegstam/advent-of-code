@@ -96,20 +96,18 @@ def draw(board, actors):
 
 
 def tick(board, actors):
-    actor_positions_in_priority_order = sorted([actor.position for actor in actors], key=lambda p: (p.y, p.x))
+    actors.sort(key=lambda a: (a.position.y, a.position.x))
 
-    for actor_position in actor_positions_in_priority_order:
-        remaining_actor_marker_types = {actor.marker for actor in get_living_actors(actors)}
-        if len(remaining_actor_marker_types) < 2:
+    for current_actor in actors:
+        if current_actor.hp <= 0:
+            continue
+
+        remaining_actors = [actor for actor in get_living_actors(actors)]
+        if len({actor.marker for actor in remaining_actors}) < 2:
             # At least one side of the battle has fallen
             return [actor for actor in actors if actor.hp > 0], False
 
-        actors_by_position = {actor.position: actor for actor in get_living_actors(actors)}
-        if actor_position not in actors_by_position:
-            # Actor got killed by a previous actor
-            continue
-
-        current_actor = actors_by_position[actor_position]
+        actors_by_position = {actor.position: actor for actor in remaining_actors}
         adjacent_target = find_adjacent_target(current_actor, actors_by_position)
 
         if not adjacent_target:
