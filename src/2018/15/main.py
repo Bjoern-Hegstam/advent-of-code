@@ -187,6 +187,10 @@ def is_target(current_actor, possible_target):
 
 assert simulate_combat('example_combat_1') == (47, 590)
 assert simulate_combat('example_combat_2') == (37, 982)
+assert simulate_combat('example_combat_3') == (46, 859)
+assert simulate_combat('example_combat_4') == (35, 793)
+assert simulate_combat('example_combat_5') == (54, 536)
+assert simulate_combat('example_combat_6') == (20, 937)
 
 if __name__ == '__main__':
     main()
