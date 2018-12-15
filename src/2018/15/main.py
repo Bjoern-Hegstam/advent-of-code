@@ -99,12 +99,15 @@ def tick(board, actors):
     actor_positions_in_priority_order = sorted([actor.position for actor in actors], key=lambda p: (p.y, p.x))
 
     for actor_position in actor_positions_in_priority_order:
-        remaining_actor_marker_types = {actor.marker for actor in actors if actor.hp > 0}
+        remaining_actor_marker_types = {actor.marker for actor in get_living_actors(actors)}
         if len(remaining_actor_marker_types) < 2:
             # At least one side of the battle has fallen
             return [actor for actor in actors if actor.hp > 0], False
 
-        actors_by_position = {actor.position: actor for actor in actors}
+        actors_by_position = {actor.position: actor for actor in get_living_actors(actors)}
+        if actor_position not in actors_by_position:
+            # Actor got killed by a previous actor
+            continue
 
         current_actor = actors_by_position[actor_position]
         adjacent_target = find_adjacent_target(current_actor, actors_by_position)
@@ -121,7 +124,11 @@ def tick(board, actors):
         if adjacent_target:
             adjacent_target.hp -= current_actor.attack_power
 
-    return [actor for actor in actors if actor.hp > 0], True
+    return get_living_actors(actors), True
+
+
+def get_living_actors(actors):
+    return [actor for actor in actors if actor.hp > 0]
 
 
 def find_adjacent_target(current_actor, actors_by_position):
@@ -178,10 +185,8 @@ def is_target(current_actor, possible_target):
     return possible_target.marker != current_actor.marker
 
 
-# assert simulate_combat('example_combat_1') == (47, 590)
-DEBUG = True
+assert simulate_combat('example_combat_1') == (47, 590)
 assert simulate_combat('example_combat_2') == (37, 982)
-DEBUG = False
 
 if __name__ == '__main__':
     main()
