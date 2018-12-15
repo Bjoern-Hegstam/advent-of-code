@@ -1,6 +1,4 @@
-from collections import namedtuple
-
-from util.geometry import Vector2, get_bounding_box
+from util.geometry import Vector2, get_bounding_box, Direction
 
 DEBUG = True
 
@@ -12,7 +10,15 @@ class BoardMarker:
     GOBLIN = 'G'
 
 
-Actor = namedtuple('Actor', 'marker, position, hp')
+class Actor:
+    def __init__(self, marker, position):
+        self.marker = marker,
+        self.position = position
+        self.hp = 200
+        self.attack_power = 3
+
+    def __repr__(self):
+        return 'Actor[marker={}, position={}, hp={}]'.format(self.marker, self.position, self.hp)
 
 
 def main():
@@ -80,10 +86,43 @@ def draw(board, actors):
 
 
 def tick(board, actors):
-    full_round_completed = True
-    updated_actors = []
+    remaining_actor_types = {actor.type for actor in actors}
+    if len(remaining_actor_types) < 2:
+        # At least one side of the battle has fallen
+        return actors, False
 
-    return updated_actors, full_round_completed
+    actor_positions = sorted([actor.position for actor in actors], key=lambda a: (a.position.y, a.position.x))
+    actors_by_position = {actor.position: actor for actor in actors}
+
+    for actor_position in actor_positions:
+        current_actor = actors_by_position[actor_position]
+        adjacent_target = find_adjacent_target(current_actor, actors_by_position)
+
+        if not adjacent_target:
+            new_position = determine_new_position(current_actor, board, actors_by_position)
+            if new_position:
+                current_actor.position = new_position
+                adjacent_target = find_adjacent_target(current_actor, actors_by_position)
+            else:
+                # Had no adjacent target and couldn't move to a new position
+                continue
+
+        if adjacent_target:
+            adjacent_target.hp -= current_actor.attack_power
+
+    return [actor for actor in actors if actor.hp > 0], True
+
+
+def find_adjacent_target(current_actor, actors_by_position):
+    for direction in [Direction.UP, Direction.LEFT, Direction.RIGHT, Direction.DOWN]:
+        adjacent_position = current_actor.position + direction
+        if adjacent_position in actors_by_position and actors_by_position[adjacent_position].marker != current_actor.marker:
+            return actors_by_position[adjacent_position]
+    return None
+
+
+def determine_new_position(current_actor, board, actors_by_position):
+    pass
 
 
 assert simulate_combat('example_combat_1') == 47, 590

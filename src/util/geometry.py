@@ -58,3 +58,10 @@ def get_nearest_point(points, target, dist_fun):
         return -1
     else:
         return min_dist_indices[0]
+
+
+class Direction:
+    UP = Vector2(0, -1)
+    DOWN = Vector2(0, 1)
+    LEFT = Vector2(-1, 0)
+    RIGHT = Vector2(1, 0)

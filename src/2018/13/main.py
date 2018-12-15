@@ -1,18 +1,10 @@
 from collections import namedtuple
 
-from util.geometry import Vector2, get_bounding_box
+from util.geometry import Vector2, get_bounding_box, Direction
 
 DEBUG = True
 
 Train = namedtuple('Train', 'id, position, direction, turn_count')
-
-
-class Direction:
-    UP = Vector2(0, -1)
-    DOWN = Vector2(0, 1)
-    LEFT = Vector2(-1, 0)
-    RIGHT = Vector2(1, 0)
-
 
 # Map train direction when entering the rail to exit direction
 RAIL_DIRECTIONS_PER_CHAR = {
