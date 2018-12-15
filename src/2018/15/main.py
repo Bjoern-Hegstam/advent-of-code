@@ -220,12 +220,12 @@ def is_target(current_actor, possible_target):
     return possible_target.marker != current_actor.marker
 
 
-assert simulate_combat('example_combat_1')[0:2] == (47, 590)
-assert simulate_combat('example_combat_2')[0:2] == (37, 982)
-assert simulate_combat('example_combat_3')[0:2] == (46, 859)
-assert simulate_combat('example_combat_4')[0:2] == (35, 793)
-assert simulate_combat('example_combat_5')[0:2] == (54, 536)
-assert simulate_combat('example_combat_6')[0:2] == (20, 937)
+assert simulate_combat('example_combat_1') == CombatResult(47, 590, False, 3)
+assert simulate_combat('example_combat_2') == CombatResult(37, 982, False, 3)
+assert simulate_combat('example_combat_3') == CombatResult(46, 859, False, 3)
+assert simulate_combat('example_combat_4') == CombatResult(35, 793, True, 3)
+assert simulate_combat('example_combat_5') == CombatResult(54, 536, True, 3)
+assert simulate_combat('example_combat_6') == CombatResult(20, 937, True, 3)
 
 assert find_optimal_elf_attack_power('example_combat_1') == CombatResult(29, 172, False, 15)
 assert find_optimal_elf_attack_power('example_combat_3') == CombatResult(33, 948, False, 4)
