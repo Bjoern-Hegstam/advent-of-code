@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 from util.geometry import Vector2, get_bounding_box, Direction
 from util.path import multi_bfs_search
 
@@ -9,6 +11,9 @@ class BoardMarker:
     OPEN_CAVERN = '.'
     ELF = 'E'
     GOBLIN = 'G'
+
+
+CombatResult = namedtuple('CombatResult', 'completed_rounds_count, sum_of_remaining_hp, elf_died, elf_attack_power')
 
 
 class Actor:
@@ -23,14 +28,35 @@ class Actor:
 
 
 def main():
-    completed_rounds_count, sum_of_remaining_hit_points = simulate_combat('input')
-    print('Answer part 1: {}'.format(completed_rounds_count * sum_of_remaining_hit_points))
+    first_combat_result = simulate_combat('input')
+    print('Answer part 1: {}'.format(first_combat_result.completed_rounds_count * first_combat_result.sum_of_remaining_hp))
+
+    optimal_combat_result = find_optimal_elf_attack_power('input')
+    print('Answer part 2: {}'.format(optimal_combat_result.completed_rounds_count * optimal_combat_result.sum_of_remaining_hp))
 
 
-def simulate_combat(filename):
+def find_optimal_elf_attack_power(filename):
+    elf_attack_power = 4
+
+    while True:
+        combat_result = simulate_combat(filename, elf_attack_power=elf_attack_power, stop_after_first_elf_death=True)
+        if combat_result.elf_died:
+            elf_attack_power += 1
+        else:
+            return combat_result
+
+
+def simulate_combat(filename, elf_attack_power=3, stop_after_first_elf_death=False):
+    print('Simulating combat[filename={}, elf_attack_power={}, stop_after_first_elf_death={}]'.format(filename, elf_attack_power, stop_after_first_elf_death))
+
     board, actors = load_combat_setup(filename)
 
+    for actor in actors:
+        if actor.marker == BoardMarker.ELF:
+            actor.attack_power = elf_attack_power
+
     completed_rounds_count = 0
+    elf_died = False
 
     if DEBUG:
         print('Initially:'.format(completed_rounds_count))
@@ -38,13 +64,18 @@ def simulate_combat(filename):
         print('')
 
     while True:
-        actors, full_round_completed = tick(board, actors)
+        actors, eliminated_actors, full_round_completed = tick(board, actors)
         if not full_round_completed:
             if DEBUG:
                 print('Round {} aborted prematurely'.format(completed_rounds_count + 1))
                 draw(board, actors)
                 print('')
             break
+
+        if stop_after_first_elf_death and BoardMarker.ELF in {actor.marker for actor in eliminated_actors}:
+            elf_died = True
+            break
+
         completed_rounds_count += 1
 
         if DEBUG:
@@ -54,8 +85,9 @@ def simulate_combat(filename):
 
     sum_of_remaining_hit_points = sum(actor.hp for actor in actors)
 
-    print('simulate_combat[{}] => completed_rounds_count={}, sum_of_remaining_hit_points={}'.format(filename, completed_rounds_count, sum_of_remaining_hit_points))
-    return completed_rounds_count, sum_of_remaining_hit_points
+    combat_result = CombatResult(completed_rounds_count, sum_of_remaining_hit_points, elf_died, elf_attack_power)
+    print('simulate_combat[{}] => {}'.format(filename, combat_result))
+    return combat_result
 
 
 def load_combat_setup(filename):
@@ -102,10 +134,10 @@ def tick(board, actors):
         if current_actor.hp <= 0:
             continue
 
-        remaining_actors = [actor for actor in get_living_actors(actors)]
+        remaining_actors = get_living_actors(actors)
         if len({actor.marker for actor in remaining_actors}) < 2:
             # At least one side of the battle has fallen
-            return [actor for actor in actors if actor.hp > 0], False
+            return remaining_actors, get_eliminated_actors(actors), False
 
         actors_by_position = {actor.position: actor for actor in remaining_actors}
         adjacent_target = find_adjacent_target(current_actor, actors_by_position)
@@ -122,11 +154,15 @@ def tick(board, actors):
         if adjacent_target:
             adjacent_target.hp -= current_actor.attack_power
 
-    return get_living_actors(actors), True
+    return get_living_actors(actors), get_eliminated_actors(actors), True
 
 
 def get_living_actors(actors):
     return [actor for actor in actors if actor.hp > 0]
+
+
+def get_eliminated_actors(actors):
+    return [actor for actor in actors if actor.hp <= 0]
 
 
 def find_adjacent_target(current_actor, actors_by_position):
@@ -183,12 +219,14 @@ def is_target(current_actor, possible_target):
     return possible_target.marker != current_actor.marker
 
 
-assert simulate_combat('example_combat_1') == (47, 590)
-assert simulate_combat('example_combat_2') == (37, 982)
-assert simulate_combat('example_combat_3') == (46, 859)
-assert simulate_combat('example_combat_4') == (35, 793)
-assert simulate_combat('example_combat_5') == (54, 536)
-assert simulate_combat('example_combat_6') == (20, 937)
+assert simulate_combat('example_combat_1')[0:2] == (47, 590)
+assert simulate_combat('example_combat_2')[0:2] == (37, 982)
+assert simulate_combat('example_combat_3')[0:2] == (46, 859)
+assert simulate_combat('example_combat_4')[0:2] == (35, 793)
+assert simulate_combat('example_combat_5')[0:2] == (54, 536)
+assert simulate_combat('example_combat_6')[0:2] == (20, 937)
+
+assert find_optimal_elf_attack_power('example_combat_1').elf_attack_power == 15
 
 if __name__ == '__main__':
     main()
