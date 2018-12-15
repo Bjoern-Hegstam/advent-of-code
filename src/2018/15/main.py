@@ -124,10 +124,13 @@ def tick(board, actors):
 
 
 def find_adjacent_target(current_actor, actors_by_position):
+    adjacent_targets = []
     for adjacent_position in get_adjacent_positions(current_actor.position):
         if is_target_position(current_actor, adjacent_position, actors_by_position):
-            return actors_by_position[adjacent_position]
-    return None
+            adjacent_targets.append(actors_by_position[adjacent_position])
+
+    adjacent_targets.sort(key=lambda a: (a.hp, a.position.y, a.position.x))
+    return adjacent_targets[0] if adjacent_targets else None
 
 
 def determine_new_position(current_actor, board, actors_by_position):
@@ -174,7 +177,7 @@ def is_target(current_actor, possible_target):
     return possible_target.marker != current_actor.marker
 
 
-assert simulate_combat('example_combat_1') == 47, 590
+assert simulate_combat('example_combat_1') == (47, 590)
 
 if __name__ == '__main__':
     main()
