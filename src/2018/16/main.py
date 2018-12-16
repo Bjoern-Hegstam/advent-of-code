@@ -114,14 +114,15 @@ def match_opcode_to_indices(opcodes_per_possible_idx):
     return matched_idx_per_opcode
 
 
-def match_idx_to_opcode(opcodes_per_possible_idx, current_idx, seen_opcodes, matched_idx_per_opcode):
+def match_idx_to_opcode(opcodes_per_possible_idx, current_idx, reserved_opcodes, matched_idx_per_opcode):
     for opcode in opcodes_per_possible_idx[current_idx]:
-        if opcode not in seen_opcodes:
-            seen_opcodes.add(opcode)
+        if opcode in reserved_opcodes:
+            continue
 
-            if opcode not in matched_idx_per_opcode or match_idx_to_opcode(opcodes_per_possible_idx, matched_idx_per_opcode[opcode], seen_opcodes, matched_idx_per_opcode):
-                matched_idx_per_opcode[opcode] = current_idx
-                return True
+        reserved_opcodes.add(opcode)
+        if opcode not in matched_idx_per_opcode or match_idx_to_opcode(opcodes_per_possible_idx, matched_idx_per_opcode[opcode], reserved_opcodes, matched_idx_per_opcode):
+            matched_idx_per_opcode[opcode] = current_idx
+            return True
 
     return False
 
