@@ -1,5 +1,5 @@
 from util.constants import ALPHABET_LOWER, ALPHABET_UPPER
-from util.geometry import Rectangle, Vector2, manhattan_dist, get_bounding_box, get_points, get_nearest_point, pad
+from util.geometry import Rectangle, Vector2, manhattan_dist, get_bounding_box, get_nearest_point
 
 alphabet = ALPHABET_LOWER + ALPHABET_UPPER
 
@@ -10,18 +10,18 @@ def main():
 
     raw_points = [line.split(', ') for line in lines]
     points = [Vector2(int(p[0]), int(p[1])) for p in raw_points]
-    bounding_box = pad(get_bounding_box(points), 1)
+    bounding_box = get_bounding_box(points).pad(1)
 
     area_counts = find_bounded_area_sizes(points, bounding_box)
     print('Answer part 1: {}'.format(max(area_counts.values())))
 
-    region_size = len([target for target in get_points(bounding_box) if sum([manhattan_dist(p, target) for p in points]) < 1e4])
+    region_size = len([target for target in bounding_box.get_points() if sum([manhattan_dist(p, target) for p in points]) < 1e4])
     print('Answer part 2: {}'.format(region_size))
 
 
 def find_bounded_area_sizes(points, bounding_box):
     point_assignments = {}
-    for p in get_points(bounding_box):
+    for p in bounding_box.get_points():
         nearest_point = get_nearest_point(points, p, manhattan_dist)
         point_assignments[p] = nearest_point
 
@@ -49,7 +49,7 @@ assert get_bounding_box([
     Vector2(8, 9)
 ]) == Rectangle(1, 1, 8, 9)
 
-assert pad(Rectangle(1, 1, 8, 9), 1) == Rectangle(0, 0, 10, 11)
+assert Rectangle(1, 1, 8, 9).pad(1) == Rectangle(0, 0, 10, 11)
 
 
 def print_point_assignments(bounding_box, point_assignments):

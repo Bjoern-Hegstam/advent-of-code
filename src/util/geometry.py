@@ -1,7 +1,4 @@
 import math
-from collections import namedtuple
-
-Rectangle = namedtuple('Rectangle', 'x, y, width, height')
 
 
 class Vector2:
@@ -28,6 +25,35 @@ class Vector2:
         return 'Vector2(x={}, y={})'.format(self.x, self.y)
 
 
+class Rectangle:
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+    def pad(self, size):
+        return Rectangle(self.x - size, self.y - size, self.width + 2 * size, self.height + 2 * size)
+
+    def get_points(self):
+        for dy in range(self.height):
+            for dx in range(self.width):
+                yield Vector2(self.x + dx, self.y + dy)
+
+    def __hash__(self):
+        h = 31 * self.x
+        h += 31 * self.y
+        h += 31 * self.width
+        h += 31 * self.height
+        return h
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y and self.width == other.width and self.height == other.height
+
+    def __repr__(self):
+        return 'Rectangle(x={}, y={}, width={}, height={})'.format(self.x, self.y, self.width, self.height)
+
+
 def manhattan_dist(p1, p2):
     return abs(p1.x - p2.x) + abs(p1.y - p2.y)
 
@@ -38,12 +64,6 @@ def get_bounding_box(points):
     max_x = max(points, key=lambda p: p.x).x
     max_y = max(points, key=lambda p: p.y).y
     return Rectangle(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
-
-
-def get_points(rect):
-    for dy in range(rect.height):
-        for dx in range(rect.width):
-            yield Vector2(rect.x + dx, rect.y + dy)
 
 
 def get_nearest_point(points, target, dist_fun):
@@ -68,7 +88,3 @@ class Direction:
     DOWN = Vector2(0, 1)
     LEFT = Vector2(-1, 0)
     RIGHT = Vector2(1, 0)
-
-
-def pad(rect, size):
-    return Rectangle(rect.x - size, rect.y - size, rect.width + 2 * size, rect.height + 2 * size)

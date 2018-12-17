@@ -1,6 +1,6 @@
 import operator
 
-from util.geometry import Rectangle, get_points, Vector2
+from util.geometry import Rectangle, Vector2
 
 GRID_SIZE = 300
 
@@ -26,7 +26,7 @@ def generate_power_grid(serial_number):
 
     grid = {}
 
-    for p in get_points(Rectangle(1, 1, GRID_SIZE, GRID_SIZE)):
+    for p in Rectangle(1, 1, GRID_SIZE, GRID_SIZE).get_points():
         rack_id = p.x + 10
         power_level = rack_id * p.y
         power_level += serial_number
