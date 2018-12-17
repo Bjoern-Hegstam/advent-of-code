@@ -1,37 +1,56 @@
+from collections import deque
+
 from util.geometry import Vector2, get_bounding_box, Direction
 
-WATER_SPRING_POSITION = Vector2(500, 0)
+DEBUG = False
+
+SPRING_POSITION = Vector2(500, 0)
 
 
 class Tile:
     CLAY = '#'
-    SAND = '.'
+    SAND = ' '
     WATER_SPRING = '+'
     VERTICAL_WATER = '|'
     HORIZONTAL_WATER = '~'
 
 
 def main():
-    ground_map = load_ground_map('example_input')
+    ground_map = load_ground_map('input')
     bounding_box = get_bounding_box(ground_map)
 
-    ground_map[WATER_SPRING_POSITION] = Tile.WATER_SPRING
+    ground_map[SPRING_POSITION] = Tile.WATER_SPRING
 
+    springs = deque()
+    springs.append(SPRING_POSITION)
     water_tile_counts = 0
     iterations = 0
     while True:
-        drip_from_spring(ground_map, bounding_box.y + bounding_box.height, WATER_SPRING_POSITION)
+        spring = springs.pop()
+        new_springs = drip_from_spring(ground_map, bounding_box.y + bounding_box.height, spring)
+        if spring in new_springs:
+            springs.append(spring)
+        elif new_springs:
+            springs.append(spring)
+            springs.extend(new_springs)
+
+        print('Spring count: {}'.format(len(springs)))
 
         updated_water_tile_counts = count_water_tiles_by_type(ground_map, bounding_box.y, bounding_box.y + bounding_box.height)
-        if updated_water_tile_counts == water_tile_counts:
+        if updated_water_tile_counts == water_tile_counts and False:
+            # TODO: This condition is wrong, simulation is stopped too early
             break
         else:
             water_tile_counts = updated_water_tile_counts
 
         iterations += 1
-        draw(ground_map, bounding_box.pad(2))
-        print('')
 
+        print('{}: {}, sum={}'.format(iterations, water_tile_counts, sum(water_tile_counts.values())))
+        if DEBUG:
+            draw(ground_map, bounding_box.pad(2))
+            print('')
+
+    draw(ground_map, bounding_box.pad(2))
     print('Stabilized at {} water tiles after {} iterations'.format(sum(water_tile_counts.values()), iterations))
 
 
@@ -69,12 +88,14 @@ def draw(ground_map, bounding_box):
 
 
 def drip_from_spring(ground_map, max_y, spring_position):
-    # Seek downwards
     water_position = spring_position
+    if spring_position in ground_map and ground_map[spring_position] == Tile.HORIZONTAL_WATER:
+        return []
+
     while True:
         position_below = water_position + Direction.DOWN
         if position_below.y > max_y:
-            return [position_below]
+            return []
 
         tile_below = ground_map.get(position_below, Tile.SAND)
 
@@ -82,27 +103,38 @@ def drip_from_spring(ground_map, max_y, spring_position):
             ground_map[position_below] = Tile.VERTICAL_WATER
             water_position = position_below
         elif tile_below == Tile.CLAY or tile_below == Tile.HORIZONTAL_WATER:
-            left_pour_destinations = pour_horizontally(ground_map, max_y, water_position, Direction.LEFT)
-            right_pour_destinations = pour_horizontally(ground_map, max_y, water_position, Direction.RIGHT)
+            left_pour_final_position, left_is_new_spring = pour_horizontally(ground_map, water_position, Direction.LEFT)
+            right_pour_final_position, right_is_new_spring = pour_horizontally(ground_map, water_position, Direction.RIGHT)
+
+            new_springs = []
+            if left_is_new_spring:
+                new_springs.append(left_pour_final_position)
+
+            if right_is_new_spring:
+                new_springs.append(right_pour_final_position)
+
+            if new_springs:
+                return new_springs
 
             final_water_destinations = {water_position}
-            final_water_destinations.update(left_pour_destinations)
-            final_water_destinations.update(right_pour_destinations)
+            final_water_destinations.add(left_pour_final_position)
+            final_water_destinations.add(right_pour_final_position)
 
             # No more open space to pour into
             if len(final_water_destinations) == 1:
                 ground_map[water_position] = Tile.HORIZONTAL_WATER
-            return list(final_water_destinations)
+
+            return [spring_position]
 
 
-def pour_horizontally(ground_map, max_y, spring_position, pour_direction):
+def pour_horizontally(ground_map, spring_position, pour_direction):
     seek_position = spring_position + pour_direction
 
     while not is_position_occupied(ground_map, seek_position):
         ground_map[seek_position] = Tile.VERTICAL_WATER
 
         if not is_position_occupied(ground_map, seek_position + Direction.DOWN):
-            return drip_from_spring(ground_map, max_y, seek_position)
+            return seek_position, True
         else:
             seek_position += pour_direction
 
@@ -110,7 +142,7 @@ def pour_horizontally(ground_map, max_y, spring_position, pour_direction):
     if final_position != spring_position:
         ground_map[final_position] = Tile.HORIZONTAL_WATER
 
-    return [seek_position - pour_direction]
+    return seek_position - pour_direction, False
 
 
 def is_position_occupied(ground_map, position):
