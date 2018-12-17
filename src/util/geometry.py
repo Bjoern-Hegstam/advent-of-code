@@ -68,3 +68,7 @@ class Direction:
     DOWN = Vector2(0, 1)
     LEFT = Vector2(-1, 0)
     RIGHT = Vector2(1, 0)
+
+
+def pad(rect, size):
+    return Rectangle(rect.x - size, rect.y - size, rect.width + 2 * size, rect.height + 2 * size)

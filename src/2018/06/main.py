@@ -1,5 +1,5 @@
 from util.constants import ALPHABET_LOWER, ALPHABET_UPPER
-from util.geometry import Rectangle, Vector2, manhattan_dist, get_bounding_box, get_points, get_nearest_point
+from util.geometry import Rectangle, Vector2, manhattan_dist, get_bounding_box, get_points, get_nearest_point, pad
 
 alphabet = ALPHABET_LOWER + ALPHABET_UPPER
 
@@ -48,11 +48,6 @@ assert get_bounding_box([
     Vector2(5, 5),
     Vector2(8, 9)
 ]) == Rectangle(1, 1, 8, 9)
-
-
-def pad(rect, size):
-    return Rectangle(rect.x - size, rect.y - size, rect.width + 2 * size, rect.height + 2 * size)
-
 
 assert pad(Rectangle(1, 1, 8, 9), 1) == Rectangle(0, 0, 10, 11)
 
