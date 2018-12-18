@@ -60,6 +60,7 @@ def main():
     print('')
     water_tile_counts = count_water_tiles_by_type(ground_map, bounding_box.y, bounding_box.y + bounding_box.height)
     print('Answer part 1: {}'.format(sum(water_tile_counts.values())))
+    print('Answer part 2: {}'.format(water_tile_counts[Tile.HORIZONTAL_WATER]))
 
 
 def load_ground_map(filename):
