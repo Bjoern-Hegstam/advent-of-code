@@ -1,8 +1,8 @@
 from collections import deque
 
-from util.geometry import Vector2, get_bounding_box, Direction
+from util.geometry import Vector2, get_bounding_box, Direction, Rectangle
 
-DEBUG = False
+DEBUG = True
 
 SPRING_POSITION = Vector2(500, 0)
 
@@ -23,17 +23,41 @@ def main():
 
     springs = deque()
     springs.append(SPRING_POSITION)
+    exhausted_springs = set()
     water_tile_counts = 0
     iterations = 0
-    while True:
-        spring = springs.pop()
-        new_springs = drip_from_spring(ground_map, bounding_box.y + bounding_box.height, spring)
-        springs.extend(new_springs)
 
-        print('Spring count: {}'.format(len(springs)))
+    while springs:
+        spring = springs.pop()
+
+        if DEBUG:
+            print('')
+            print('Iteration {}'.format(iterations + 1))
+            print('Spring count: {}'.format(len(springs) + 1))
+            print('Before drip from spring: {}'.format(spring))
+            draw(ground_map, Rectangle(spring.x - 50, spring.y - 2, 100, 50))
+            print('')
+
+        new_springs = drip_from_spring(ground_map, bounding_box.y + bounding_box.height, spring)
+
+        active_new_springs = [new_spring for new_spring in new_springs if new_spring not in exhausted_springs]
+        if len(active_new_springs) == 1 and spring in active_new_springs:
+            active_new_springs = []
+
+        if DEBUG:
+            print('After drip:')
+            draw(ground_map, Rectangle(spring.x - 50, spring.y - 2, 100, 50))
+            print('')
+            print('New springs: {}'.format(new_springs))
+            print('Of which are active: {}'.format(active_new_springs))
+
+        if active_new_springs:
+            springs.extend(active_new_springs)
+        else:
+            exhausted_springs.add(spring)
 
         updated_water_tile_counts = count_water_tiles_by_type(ground_map, bounding_box.y, bounding_box.y + bounding_box.height)
-        if updated_water_tile_counts == water_tile_counts and False:
+        if updated_water_tile_counts == water_tile_counts and len(active_new_springs) == 1:
             # TODO: This condition is wrong, simulation is stopped too early
             break
         else:
@@ -42,9 +66,6 @@ def main():
         iterations += 1
 
         print('{}: {}, sum={}'.format(iterations, water_tile_counts, sum(water_tile_counts.values())))
-        if DEBUG:
-            draw(ground_map, bounding_box.pad(2))
-            print('')
 
     draw(ground_map, bounding_box.pad(2))
     print('Stabilized at {} water tiles after {} iterations'.format(sum(water_tile_counts.values()), iterations))
@@ -77,6 +98,7 @@ def parse_range(range_str):
 
 def draw(ground_map, bounding_box):
     for dy in range(bounding_box.height):
+        print('{: 4d}'.format(bounding_box.y + dy), end='')
         for dx in range(bounding_box.width):
             p = Vector2(bounding_box.x + dx, bounding_box.y + dy)
             print(ground_map.get(p, Tile.SAND), end='')
@@ -99,22 +121,29 @@ def drip_from_spring(ground_map, max_y, spring_position):
             ground_map[position_below] = Tile.VERTICAL_WATER
             water_position = position_below
         elif tile_below == Tile.CLAY or tile_below == Tile.HORIZONTAL_WATER:
-            left_pour_stop_position, left_pours_down = pour_horizontally(ground_map, water_position, Direction.LEFT)
-            right_pour_stop_position, right_pours_down = pour_horizontally(ground_map, water_position, Direction.RIGHT)
+            fill_position = water_position
+            while fill_position.y >= spring_position.y:
+                left_pour_stop_position, left_pours_down = pour_horizontally(ground_map, fill_position, Direction.LEFT)
+                right_pour_stop_position, right_pours_down = pour_horizontally(ground_map, fill_position, Direction.RIGHT)
 
-            if not left_pours_down and not right_pours_down:
-                for x in range(left_pour_stop_position.x, right_pour_stop_position.x + 1):
-                    ground_map[Vector2(x, left_pour_stop_position.y)] = Tile.HORIZONTAL_WATER
-                return [spring_position]
+                if not left_pours_down and not right_pours_down:
+                    for x in range(left_pour_stop_position.x, right_pour_stop_position.x + 1):
+                        ground_map[Vector2(x, left_pour_stop_position.y)] = Tile.HORIZONTAL_WATER
+                    fill_position += Direction.UP
+                else:
+                    springs = []
 
-            springs = [spring_position]
-            if left_pours_down:
-                springs.append(left_pour_stop_position)
+                    if fill_position.y != spring_position.y:
+                        springs.append(spring_position)
 
-            if right_pours_down:
-                springs.append(right_pour_stop_position)
+                    if left_pours_down:
+                        springs.append(left_pour_stop_position)
 
-            return springs
+                    if right_pours_down:
+                        springs.append(right_pour_stop_position)
+
+                    return springs
+            return []
 
 
 def pour_horizontally(ground_map, spring_position, pour_direction):
