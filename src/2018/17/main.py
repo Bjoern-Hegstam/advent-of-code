@@ -2,7 +2,7 @@ from collections import deque
 
 from util.geometry import Vector2, get_bounding_box, Direction, Rectangle
 
-DEBUG = True
+DEBUG_DRAW = False
 
 SPRING_POSITION = Vector2(500, 0)
 
@@ -24,17 +24,16 @@ def main():
     springs = deque()
     springs.append(SPRING_POSITION)
     exhausted_springs = set()
-    water_tile_counts = 0
     iterations = 0
 
     while springs:
         spring = springs.pop()
 
-        if DEBUG:
-            print('')
-            print('Iteration {}'.format(iterations + 1))
-            print('Spring count: {}'.format(len(springs) + 1))
-            print('Before drip from spring: {}'.format(spring))
+        print('')
+        print('Iteration {}'.format(iterations + 1))
+        print('Spring count: {}'.format(len(springs) + 1))
+        print('Before drip from spring: {}'.format(spring))
+        if DEBUG_DRAW:
             draw(ground_map, Rectangle(spring.x - 50, spring.y - 2, 100, 50))
             print('')
 
@@ -44,31 +43,23 @@ def main():
         if len(active_new_springs) == 1 and spring in active_new_springs:
             active_new_springs = []
 
-        if DEBUG:
-            print('After drip:')
+        print('After drip:')
+        if DEBUG_DRAW:
             draw(ground_map, Rectangle(spring.x - 50, spring.y - 2, 100, 50))
             print('')
-            print('New springs: {}'.format(new_springs))
-            print('Of which are active: {}'.format(active_new_springs))
+        print('New springs: {}'.format(new_springs))
+        print('Of which are active: {}'.format(active_new_springs))
 
         if active_new_springs:
             springs.extend(active_new_springs)
         else:
             exhausted_springs.add(spring)
 
-        updated_water_tile_counts = count_water_tiles_by_type(ground_map, bounding_box.y, bounding_box.y + bounding_box.height)
-        if updated_water_tile_counts == water_tile_counts and len(active_new_springs) == 1:
-            # TODO: This condition is wrong, simulation is stopped too early
-            break
-        else:
-            water_tile_counts = updated_water_tile_counts
-
         iterations += 1
 
-        print('{}: {}, sum={}'.format(iterations, water_tile_counts, sum(water_tile_counts.values())))
-
-    draw(ground_map, bounding_box.pad(2))
-    print('Stabilized at {} water tiles after {} iterations'.format(sum(water_tile_counts.values()), iterations))
+    print('')
+    water_tile_counts = count_water_tiles_by_type(ground_map, bounding_box.y, bounding_box.y + bounding_box.height)
+    print('Answer part 1: {}'.format(sum(water_tile_counts.values())))
 
 
 def load_ground_map(filename):
