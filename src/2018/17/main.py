@@ -28,11 +28,7 @@ def main():
     while True:
         spring = springs.pop()
         new_springs = drip_from_spring(ground_map, bounding_box.y + bounding_box.height, spring)
-        if spring in new_springs:
-            springs.append(spring)
-        elif new_springs:
-            springs.append(spring)
-            springs.extend(new_springs)
+        springs.extend(new_springs)
 
         print('Spring count: {}'.format(len(springs)))
 
@@ -103,28 +99,22 @@ def drip_from_spring(ground_map, max_y, spring_position):
             ground_map[position_below] = Tile.VERTICAL_WATER
             water_position = position_below
         elif tile_below == Tile.CLAY or tile_below == Tile.HORIZONTAL_WATER:
-            left_pour_final_position, left_is_new_spring = pour_horizontally(ground_map, water_position, Direction.LEFT)
-            right_pour_final_position, right_is_new_spring = pour_horizontally(ground_map, water_position, Direction.RIGHT)
+            left_pour_stop_position, left_pours_down = pour_horizontally(ground_map, water_position, Direction.LEFT)
+            right_pour_stop_position, right_pours_down = pour_horizontally(ground_map, water_position, Direction.RIGHT)
 
-            new_springs = []
-            if left_is_new_spring:
-                new_springs.append(left_pour_final_position)
+            if not left_pours_down and not right_pours_down:
+                for x in range(left_pour_stop_position.x, right_pour_stop_position.x + 1):
+                    ground_map[Vector2(x, left_pour_stop_position.y)] = Tile.HORIZONTAL_WATER
+                return [spring_position]
 
-            if right_is_new_spring:
-                new_springs.append(right_pour_final_position)
+            springs = [spring_position]
+            if left_pours_down:
+                springs.append(left_pour_stop_position)
 
-            if new_springs:
-                return new_springs
+            if right_pours_down:
+                springs.append(right_pour_stop_position)
 
-            final_water_destinations = {water_position}
-            final_water_destinations.add(left_pour_final_position)
-            final_water_destinations.add(right_pour_final_position)
-
-            # No more open space to pour into
-            if len(final_water_destinations) == 1:
-                ground_map[water_position] = Tile.HORIZONTAL_WATER
-
-            return [spring_position]
+            return springs
 
 
 def pour_horizontally(ground_map, spring_position, pour_direction):
@@ -137,10 +127,6 @@ def pour_horizontally(ground_map, spring_position, pour_direction):
             return seek_position, True
         else:
             seek_position += pour_direction
-
-    final_position = seek_position - pour_direction
-    if final_position != spring_position:
-        ground_map[final_position] = Tile.HORIZONTAL_WATER
 
     return seek_position - pour_direction, False
 
