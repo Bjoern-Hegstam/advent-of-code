@@ -40,6 +40,9 @@ class Rectangle:
             for dx in range(self.width):
                 yield Vector2(self.x + dx, self.y + dy)
 
+    def contains(self, p):
+        return self.x <= p.x < self.x + self.width and self.y <= p.y < self.y + self.height
+
     def __hash__(self):
         h = 31 * self.x
         h += 31 * self.y
