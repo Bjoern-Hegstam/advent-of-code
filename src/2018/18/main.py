@@ -39,23 +39,27 @@ def load_landscape(filename):
     return landscape
 
 
-def run_simulation(landscape, iter_count):
+def run_simulation(initial_landscape, iter_count):
+    landscape = initial_landscape
     previous_landscapes = [landscape]
-    for minute in range(iter_count):
+    iteration = 0
+    while iteration < iter_count:
         landscape = update(landscape)
+        iteration += 1
 
-        for old_landscape in previous_landscapes:
+        for idx, old_landscape in enumerate(previous_landscapes):
             if old_landscape == landscape:
-                print('Found one!')
-                return landscape
+                cycle_length = iteration - idx
+                print('Found landscape cycle of length {}'.format(cycle_length))
+                # Found a cycle, infer which landscape will be current on the last iteration
+                cycle_offset = cycle_length % len(previous_landscapes)
+                return previous_landscapes[idx + cycle_offset - 1]
         else:
             previous_landscapes.append(landscape)
-            print(len(previous_landscapes))
+            print('Iteration {}: Landscape count={}'.format(iteration, len(previous_landscapes)))
 
-        if DEBUG or minute % 1000 == 0:
-            print('After {} minute(s):'.format(minute + 1))
+        if DEBUG:
             draw(landscape)
-            print('')
 
     return landscape
 
