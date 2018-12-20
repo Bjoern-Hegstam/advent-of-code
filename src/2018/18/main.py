@@ -40,8 +40,17 @@ def load_landscape(filename):
 
 
 def run_simulation(landscape, iter_count):
+    previous_landscapes = [landscape]
     for minute in range(iter_count):
         landscape = update(landscape)
+
+        for old_landscape in previous_landscapes:
+            if old_landscape == landscape:
+                print('Found one!')
+                return landscape
+        else:
+            previous_landscapes.append(landscape)
+            print(len(previous_landscapes))
 
         if DEBUG or minute % 1000 == 0:
             print('After {} minute(s):'.format(minute + 1))
