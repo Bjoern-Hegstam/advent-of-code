@@ -2,6 +2,8 @@ from collections import Counter
 
 from util.geometry import get_bounding_box, Vector2, Direction
 
+DEBUG = False
+
 
 class Tile:
     OPEN = '.'
@@ -10,21 +12,19 @@ class Tile:
 
 
 def main():
-    landscape = load_landscape('input')
+    initial_landscape = load_landscape('input')
 
     print('Initial state: ')
-    draw(landscape)
+    draw(initial_landscape)
     print('')
 
-    for minute in range(10):
-        landscape = update(landscape)
-
-        print('After {} minute(s):'.format(minute + 1))
-        draw(landscape)
-        print('')
-
+    landscape = run_simulation(initial_landscape, 10)
     tile_count = Counter(landscape.values())
     print('Answer part 1: {}'.format(tile_count.get(Tile.TREES, 0) * tile_count.get(Tile.LUMBER, 0)))
+
+    landscape = run_simulation(initial_landscape, 1000000000)
+    tile_count = Counter(landscape.values())
+    print('Answer part 2: {}'.format(tile_count.get(Tile.TREES, 0) * tile_count.get(Tile.LUMBER, 0)))
 
 
 def load_landscape(filename):
@@ -39,20 +39,46 @@ def load_landscape(filename):
     return landscape
 
 
+def run_simulation(landscape, iter_count):
+    for minute in range(iter_count):
+        landscape = update(landscape)
+
+        if DEBUG or minute % 1000 == 0:
+            print('After {} minute(s):'.format(minute + 1))
+            draw(landscape)
+            print('')
+
+    return landscape
+
+
 def update(landscape):
     updated_landscape = {}
     bounding_box = get_bounding_box(landscape)
 
+    cumulative_tile_counts = {}
+    for dy in range(bounding_box.height + 1):
+        for dx in range(bounding_box.width + 1):
+            p = Vector2(bounding_box.x + dx, bounding_box.y + dy)
+            cumulative_tile_counts[p] = (Counter(landscape[p]) if p in landscape else Counter()) \
+                                        + cumulative_tile_counts.get(p + Direction.UP, Counter()) \
+                                        + cumulative_tile_counts.get(p + Direction.LEFT, Counter()) \
+                                        - cumulative_tile_counts.get(p + Direction.LEFT + Direction.UP, Counter())
+
     for position in landscape:
         tile = landscape[position]
-        neighbor_tiles = Counter(landscape[p] for p in gen_neighbor_positions(position, bounding_box))
+        neighbor_tiles = cumulative_tile_counts.get(position + Vector2(1, 1), Counter()) \
+                         + cumulative_tile_counts.get(position + Vector2(-2, -2), Counter()) \
+                         - cumulative_tile_counts.get(position + Vector2(1, -2), Counter()) \
+                         - cumulative_tile_counts.get(position + Vector2(-2, 1), Counter()) \
+                         - Counter(tile)
+        assert sum(neighbor_tiles.values()) <= 8
 
         if tile == Tile.OPEN and neighbor_tiles.get(Tile.TREES, 0) >= 3:
             updated_landscape[position] = Tile.TREES
         elif tile == Tile.TREES and neighbor_tiles.get(Tile.LUMBER, 0) >= 3:
             updated_landscape[position] = Tile.LUMBER
         elif tile == Tile.LUMBER:
-            if neighbor_tiles.get(Tile.LUMBER, 0) >= 1 and neighbor_tiles.get(Tile.TREES, 0):
+            if neighbor_tiles.get(Tile.LUMBER, 0) >= 1 and neighbor_tiles.get(Tile.TREES, 0) >= 1:
                 updated_landscape[position] = Tile.LUMBER
             else:
                 updated_landscape[position] = Tile.OPEN
