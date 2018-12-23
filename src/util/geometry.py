@@ -44,9 +44,9 @@ class Vector3:
         return self.x == other.x and self.y == other.y and self.z == other.z
 
     def __lt__(self, other):
-        return self.z < other.z or \
-               (self.z == other.z and self.y < other.y) or \
-               (self.z == other.z and self.y == other.y and self.y < other.y)
+        return self.z < other.z \
+               or (self.z == other.z and self.y < other.y) \
+               or (self.z == other.z and self.y == other.y and self.y < other.y)
 
     def __repr__(self):
         return 'Vector3(x={}, y={}, z={})'.format(self.x, self.y, self.z)
@@ -78,10 +78,64 @@ class Rectangle:
         return h
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y and self.width == other.width and self.height == other.height
+        return self.x == other.x \
+               and self.y == other.y \
+               and self.width == other.width \
+               and self.height == other.height
 
     def __repr__(self):
         return 'Rectangle(x={}, y={}, width={}, height={})'.format(self.x, self.y, self.width, self.height)
+
+
+class Cube:
+    def __init__(self, x, y, z, width, height, depth):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.width = width
+        self.height = height
+        self.depth = depth
+
+    def pad(self, size):
+        return Cube(
+            self.x - size,
+            self.y - size,
+            self.z - size,
+            self.width + 2 * size,
+            self.height + 2 * size,
+            self.depth + 2 * size
+        )
+
+    def get_points(self):
+        for dz in range(self.depth):
+            for dy in range(self.height):
+                for dx in range(self.width):
+                    yield Vector3(self.x + dx, self.y + dy, self.z + dz)
+
+    def contains(self, p):
+        return self.x <= p.x < self.x + self.width \
+               and self.y <= p.y < self.y + self.height \
+               and self.z <= p.z < self.z + self.depth
+
+    def __hash__(self):
+        h = 31 * self.x
+        h += 31 * self.y
+        h += 31 * self.z
+        h += 31 * self.width
+        h += 31 * self.height
+        h += 31 * self.depth
+        return h
+
+    def __eq__(self, other):
+        return self.x == other.x \
+               and self.y == other.y \
+               and self.z == other.z \
+               and self.width == other.width \
+               and self.height == other.height \
+               and self.depth == other.depth
+
+    def __repr__(self):
+        return 'Cube(x={}, y={}, z={}, width={}, height={}, depth={})'.format(self.x, self.y, self.z, self.width, self.height, self.depth)
 
 
 def manhattan_dist(p1, p2):
@@ -93,11 +147,19 @@ def manhattan_dist(p1, p2):
 
 
 def get_bounding_box(points):
+    assert len(points) > 0
+
     min_x = min(points, key=lambda p: p.x).x
     min_y = min(points, key=lambda p: p.y).y
     max_x = max(points, key=lambda p: p.x).x
     max_y = max(points, key=lambda p: p.y).y
-    return Rectangle(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
+
+    if not hasattr(points[0], 'z'):
+        return Rectangle(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
+
+    min_z = min(points, key=lambda p: p.z).z
+    max_z = max(points, key=lambda p: p.z).z
+    return Cube(min_x, min_y, min_z, max_x - min_x + 1, max_y - min_y + 1, max_z - min_z + 1)
 
 
 def get_nearest_point(points, target, dist_fun):
