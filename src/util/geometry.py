@@ -154,7 +154,7 @@ def get_bounding_box(points):
     max_x = max(points, key=lambda p: p.x).x
     max_y = max(points, key=lambda p: p.y).y
 
-    if not hasattr(points[0], 'z'):
+    if not hasattr(next(iter(points)), 'z'):
         return Rectangle(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
 
     min_z = min(points, key=lambda p: p.z).z
