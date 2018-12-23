@@ -25,6 +25,33 @@ class Vector2:
         return 'Vector2(x={}, y={})'.format(self.x, self.y)
 
 
+class Vector3:
+    def __init__(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __add__(self, other):
+        return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __sub__(self, other):
+        return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    def __hash__(self):
+        return 31 * 31 * self.x + 31 * self.y + self.z
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y and self.z == other.z
+
+    def __lt__(self, other):
+        return self.z < other.z or \
+               (self.z == other.z and self.y < other.y) or \
+               (self.z == other.z and self.y == other.y and self.y < other.y)
+
+    def __repr__(self):
+        return 'Vector3(x={}, y={}, z={})'.format(self.x, self.y, self.z)
+
+
 class Rectangle:
     def __init__(self, x, y, width, height):
         self.x = x
@@ -58,7 +85,11 @@ class Rectangle:
 
 
 def manhattan_dist(p1, p2):
-    return abs(p1.x - p2.x) + abs(p1.y - p2.y)
+    d = abs(p1.x - p2.x) + abs(p1.y - p2.y)
+    if hasattr(p1, 'z'):
+        assert hasattr(p2, 'z')
+        d += abs(p1.z - p2.z)
+    return d
 
 
 def get_bounding_box(points):
